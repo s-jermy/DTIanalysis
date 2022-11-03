@@ -1,5 +1,5 @@
 %% New DTI script
-function StartScript(varargin)
+function DTIanalysis(varargin)
 % STARTSCRIPT({saveTag} {batchFlag} {batchInd})
 %     in:
 %     saveTag - name of folder (or project) where data will be saved
