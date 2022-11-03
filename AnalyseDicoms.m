@@ -16,7 +16,6 @@ nfo.Info = [];
 h = waitbar(0,'Analysing...');
 
 warnedonce = false;
-fixNomInt = false; %sj - are there any missing nominal intervals
 
 %% sort images into mag and phase images; and fix nominal interval
 AcquisitionTimes = sort(fieldnames(dicom));
@@ -49,9 +48,7 @@ for i = 1:length(AcquisitionTimes)
     nfo.Info(i).WindowWidth = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.WindowWidth;
     nfo.Info(i).AcqTime = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.AcqTime;
     nfo.Info(i).DiffDirVec = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.DiffDirVec;
-    if (isfield(dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info,'ImageComments'))
-        nfo.Info(i).ImageComments = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.ImageComments;
-    end
+    nfo.Info(i).InstanceNumber = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.InstanceNumber;
     if i==1
         nfo.PatientID = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.PatientID;
         nfo.ST = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.SliceThickness;
@@ -65,38 +62,33 @@ end
 close(h);
 
 h = waitbar(0,'Fixing nominal intervals...');
+if nfo.TE < 30
+    AcqDiffToms = 500; % 2RR intervals in s to one RR in ms
+else
+    AcqDiffToms = 1000;% 1 RR interval in s to one RR in ms
+end
 % try copying nominal intervals from non-empty neighbours
 for i = 1:length(AcquisitionTimes)
     if nfo.Info(i).NominalInterval == 0
-        if i == 1
+        if nfo.Info(i).InstanceNumber == 1
             if nfo.Info(i+1).NominalInterval == 0
-                fixNomInt = true; %sj - missing nominal intervals
+                nfo.Info(i).NominalInterval = AcqDiffToms*seconds(nfo.Info(i+1).AcqTime-nfo.Info(i).AcqTime); 
             else
                 nfo.Info(i).NominalInterval = nfo.Info(i+1).NominalInterval;
             end
         else
-            if nfo.Info(i-1).NominalInterval == 0
-                if (i == length(AcquisitionTimes)) || (nfo.Info(i+1).NominalInterval == 0)
-                    fixNomInt = true; %sj - missing nominal intervals
-                else
-                    nfo.Info(i).NominalInterval = nfo.Info(i+1).NominalInterval;
-                end
-            else
-                nfo.Info(i).NominalInterval = nfo.Info(i-1).NominalInterval;
-            end
+            nfo.Info(i).NominalInterval = AcqDiffToms*seconds(nfo.Info(i).AcqTime-nfo.Info(i-1).AcqTime); 
         end
     end
     waitbar(i/length(AcquisitionTimes),h);
 end
 
-if fixNomInt
-    nfo.Info = fixNominalInterval(nfo.Info); %sj - fix missing nominal intervals
-end
 close(h);
 
 end
 
 %%
+%{
 function nfo2 = fixNominalInterval(nfo)
 % in:
 % nfo - structure containing info about dicom images
@@ -127,3 +119,4 @@ for i=1:size(zNomIntervals,2)
 end
 
 end
+%}
