@@ -58,7 +58,10 @@ for i=1:length(cardiacphases)
     %don't try sorting, this borked the whole thing - past steve XOXO
 %         [TMPbValUncorr,ind] = sort(bValUncorr(uBM1));
         TMPbValUncorr = bValUncorr(uBM1);
-        TMPbVal = bVal(uBM1); %TMPbVal = TMPbVal(ind);
+        % TMPbVal = bVal(uBM1); %TMPbVal = TMPbVal(ind);
+        for cBM = 1:length(uBM1) % EMT because we want to take into account all instances of a b-value
+            TMPbVal(cBM) = mean(bVal(uBM2==cBM));
+        end
         TMPdir = DiffDirVecs(uBM1,:); %TMPdir = TMPdir(ind,:);
     
         refbVal = min(TMPbValUncorr,[],'all');
