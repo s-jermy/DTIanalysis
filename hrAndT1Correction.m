@@ -42,7 +42,7 @@ for i=1:length(cardiacphases)
         regImage = cat(3,SliceData(:).regImage);
         if (min(NominalIntervals)>0)
             warning('applying T1 correction to registered images');
-            corrfact = 1./(1-exp(-NominalIntervals./1471)); %sj - where does the 1471 come from?
+            corrfact = 1./(1-exp(-NominalIntervals./1471)); %sj - https://doi.org/10.1002/mrm.20605
             corrfact = permute(corrfact,[3 1 2]);
             regImage = regImage.*repmat(corrfact,size(regImage,1),size(regImage,2));
 
