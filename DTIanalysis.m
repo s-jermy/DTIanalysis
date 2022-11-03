@@ -1,6 +1,6 @@
 %% New DTI script
 function DTIanalysis(varargin)
-% STARTSCRIPT({saveTag} {batchFlag} {batchInd})
+% DTIANALYSIS({saveTag} {batchFlag} {batchInd})
 %     in:
 %     saveTag - name of folder (or project) where data will be saved
 %     batchFlag - flag to set if StartScript will be running multiple cases
@@ -10,7 +10,7 @@ function DTIanalysis(varargin)
 %     
 %     description:
 %     Main script for running DTIanalysis. If no inputs are given, it is
-%     equivalent to running StartScript('default',0).
+%     equivalent to running DTIanalysis('default',0).
 
 narginchk(0,3)
 
@@ -45,11 +45,9 @@ switch saveTagCell{1}
 end
 
 %%
-additionalID = 'affreg_HRcorr_dti'; %sj - tags for changes
-
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
-% clc
 
+additionalID = 'affreg_HRcorr_dti'; %sj - tags for changes
 lb_labels = {'b0','b15','b50','b350'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
@@ -163,7 +161,7 @@ if ~newfolder
     end
 end
 
-save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','doAffineReg','additionalID');
+save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','doAffineReg','additionalID','lb_labels','hb_labels');
 
 %% load images and sort
 if isempty(lastFunc) || strcmp(lastFunc,'AnalyseDicoms')
