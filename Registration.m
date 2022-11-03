@@ -114,10 +114,15 @@ for j = 1:numel(regInd)
     tforminit = imregtform(moving,fixed,'similarity',opt,met); %start with a rigid transformation to get us close
     trans{regInd(j)} = imregtform(moving,fixed,'affine',opt,met,'InitialTransformation',tforminit); %then use that as an initial transform, allowing a good affine transform to be found more easily
 
-    slice_dicom(regInd(j)).transform = trans{regInd(j)};
-    slice_dicom(regInd(j)).regImage = imwarp(moving,trans{regInd(j)},'OutputView',Rfixed); %apply final transform
     if (isfield(slice_dicom(regInd(j)),'phaseimage'))
-        slice_dicom(regInd(j)).regPhase = imwarp(slice_dicom(regInd(j)).phaseimage(y_range,x_range),trans{regInd(j)},'OutputView',Rfixed); %to phase image as well
+        movingPhase = slice_dicom(regInd(j)).phaseimage(y_range,x_range);
+        movingComplex = moving.*exp(1i*movingPhase);
+    
+        tempRegIm = imwarp(movingComplex,trans{regInd(j)},'OutputView',Rfixed);
+        slice_dicom(regInd(j)).regImage = abs(tempRegIm);
+        slice_dicom(regInd(j)).regPhase = angle(tempRegIm);
+    else
+        slice_dicom(regInd(j)).regImage  = imwarp(moving,trans{regInd(j)},'OutputView',Rfixed);
     end
     
     waitbar(j/numel(slice_dicom),h);
@@ -150,7 +155,16 @@ for k = 1:numel(uBV1)
 
         tforminit = imregtform(moving,fixed,'similarity',opt,met); %rigid transform
         tform{j} = imregtform(moving,fixed,'affine',opt,met,'InitialTransformation',tforminit); %affine transform with rigid as initial
-        bInter(:,:,j) = imwarp(moving,tform{j},'OutputView',Rfixed); %intermediate registration
+        
+        if (isfield(slice_dicom(regInd(j)),'phaseimage'))
+            movingPhase = slice_dicom(regInd(j)).phaseimage(y_range,x_range);
+            movingComplex = moving.*exp(1i*movingPhase);
+            
+            tempRegIm = imwarp(movingComplex,trans{regInd(j)},'OutputView',Rfixed);
+            bInter(:,:,j) = abs(tempRegIm); %just take the mag
+        else
+            bInter(:,:,j)  = imwarp(moving,tform{j},'OutputView',Rfixed);
+        end
         
         waitbar((complete+j/2)/numel(slice_dicom),h);
     end
@@ -172,9 +186,16 @@ for k = 1:numel(uBV1)
 
         trans{regInd(j)} = affine2d(tform{j}.T * tformaver.T); %the final transform is found by multiplying the intermediate and the average transforms
         slice_dicom(regInd(j)).transform = trans{regInd(j)};
-        slice_dicom(regInd(j)).regImage = imwarp(moving,trans{regInd(j)},'OutputView',Rfixed); %apply final transform
-        if (isfield(slice_dicom(j),'phaseimage'))
-            slice_dicom(regInd(j)).regPhase = imwarp(slice_dicom(regInd(j)).phaseimage(y_range,x_range),trans{regInd(j)},'OutputView',Rfixed); %to phase image as well
+        
+        if (isfield(slice_dicom(regInd(j)),'phaseimage'))
+            movingPhase = slice_dicom(regInd(j)).phaseimage(y_range,x_range);
+            movingComplex = moving.*exp(1i*movingPhase);
+            
+            tempRegIm = imwarp(movingComplex,trans{regInd(j)},'OutputView',Rfixed);
+            slice_dicom(j).regImage = abs(tempRegIm);
+            slice_dicom(j).regPhase = angle(tempRegIm);
+        else
+            slice_dicom(j).regImage  = imwarp(moving,trans{regInd(j)},'OutputView',Rfixed);
         end
         
         waitbar((complete+j/2)/numel(slice_dicom),h);
@@ -206,21 +227,30 @@ if isempty(slice_dicom)
     return
 end
 
+fixed = slice_dicom(reg_to).image(y_range,x_range);
+
 h = waitbar(0,'Performing simple registration...');
 
 for j=1:length(slice_dicom)
+    moving = slice_dicom(j).image(y_range,x_range);
+    
     %% Set registration parameters
     if j == reg_to
         regParams = [0 0 0 0];
     else
-        regParams = dftregistration(fft2(slice_dicom(2).image(y_range,x_range)),...
-            fft2(slice_dicom(j).image(y_range,x_range)),100);
+        regParams = dftregistration(fft2(fixed),fft2(moving),100);
     end
 
     %% crop images and register
-    slice_dicom(j).regImage  = emt_imshift(slice_dicom(j).image(y_range,x_range),-regParams(4),-regParams(3));
     if (isfield(slice_dicom(j),'phaseimage'))
-        slice_dicom(j).regPhase = emt_imshift(slice_dicom(j).phaseimage(y_range,x_range),-regParams(4),-regParams(3)); %register breathholds?
+        movingPhase = slice_dicom(j).phaseimage(y_range,x_range);
+        movingComplex = moving.*exp(1i*movingPhase);
+        
+        tempRegIm = emt_imshift(movingComplex,-regParams(4),-regParams(3));
+        slice_dicom(j).regImage = abs(tempRegIm);
+        slice_dicom(j).regPhase = angle(tempRegIm);
+    else
+        slice_dicom(j).regImage  = emt_imshift(moving,-regParams(4),-regParams(3));
     end
     
     waitbar(j/length(slice_dicom),h);
