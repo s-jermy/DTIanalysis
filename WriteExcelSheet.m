@@ -1,4 +1,4 @@
-function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir)
+function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir,lowb_labels,highb_labels)
 
 % Get a handle to Sheets and select Sheet 1
 Sheets = Workbook.Sheets;
@@ -55,13 +55,17 @@ for i=1:length(cardiacphases)
         
         lowb = fieldnames(SegSlice.means.MD);
         for lb=1:length(lowb)
-            if ~any(strcmp(lowb{lb},{'b0','b15','b50','b350'}))
-                continue
+            if ~isempty(lowb_labels)
+                if ~any(strcmp(lowb{lb},lowb_labels))
+                    continue
+                end
             end
             highb = fieldnames(SegSlice.means.MD.(lowb{lb}));
             for hb=1:length(highb)
-                if strcmp(highb{hb},'b50')
-                    continue
+                if ~isempty(highb_labels)
+                    if ~any(strcmp(highb{hb},highb_labels))
+                        continue
+                    end
                 end
                 % Add one more sheet for this slice
                 lastSheet = get(Sheets, 'Item', Sheets.Count);
