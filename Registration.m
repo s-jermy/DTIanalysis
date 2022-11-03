@@ -45,11 +45,12 @@ for i = 1:length(cardiacphases)
         if doAff
             RegData = AffineReg(SliceData,imrangex,imrangey,B_values,regb);
         else
-            RegInMat = 0;
+%             regTo = find(cat(1,SliceData(:).contoursDefined)); %haven't defined any contours so...
+            regTo = 1; %just use first non-excluded image, although you may not always want to register to a b0 image?
             if isfield(nfo{j},'RegisterInMatlab')
-                RegInMat = nfo{j}.RegisterInMatlab;
+                regTo = nfo{j}.RegisterInMatlab; %I haven't actually done anything with this field, could be used to override the above if there is a specific image you wish to use
             end
-            RegData = SimpleReg(SliceData,imrangex,imrangey,B_values,RegInMat);
+            RegData = SimpleReg(SliceData,imrangex,imrangey,regTo);
         end
     
         for k=1:length(uBVal)
@@ -188,11 +189,11 @@ reg_dicom = slice_dicom;
 
 end
 
-function reg_dicom = SimpleReg(slice_dicom,x_range,y_range,reg_matlab)
+function reg_dicom = SimpleReg(slice_dicom,x_range,y_range,reg_to)
 % in:
 % slice_dicom - structure containing diffusion images
 % x_range/y_range - range to constrain registration
-% reg_matlab - get registration parameters from matlab
+% reg_to - Index of image to use as ground-truth for registration
 % 
 % out:
 % reg_dicom - structure containing registered diffusion images
@@ -209,7 +210,7 @@ h = waitbar(0,'Performing simple registration...');
 
 for j=1:length(slice_dicom)
     %% Set registration parameters
-    if ~reg_matlab% || (i == regTo))
+    if j == reg_to
         regParams = [0 0 0 0];
     else
         regParams = dftregistration(fft2(slice_dicom(2).image(y_range,x_range)),...
