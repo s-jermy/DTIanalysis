@@ -23,3 +23,4 @@ superellipsoid_demo/subplot_tight.m
 superellipsoid_demo/superellipsoid.m
 superellipsoid_demo/superquadric.m
 superellipsoid_demo/supertoroid.m
+*.asv
