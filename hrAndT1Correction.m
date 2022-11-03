@@ -44,7 +44,7 @@ for i=1:length(cardiacphases)
         end
     
         %% apply T1 correction for SE data only (this is only convention EMT)
-        if nfo{1}.TE > 30
+        if nfo{j}.TE > 30
             NominalIntervals = arrayfun(@(x) x.NominalInterval,SliceInfo);
             regImage = cat(3,SliceData(:).regImage);
             if (min(NominalIntervals)>0)
