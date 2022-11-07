@@ -51,6 +51,7 @@ additionalID = 'affreg_HRcorr_dti'; %sj - tags for changes
 lb_labels = {'b0','b15','b50','b350'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
+glyphs = true; %sj - show ellipsoid glyphs of tensors
 lastFunc = '';
 
 %% check/create folders
@@ -111,7 +112,7 @@ if ~newfolder
         lastFunc = '';
     end
     
-%     %{
+    %{
     lastFunc = 'RejectImages'; %override
     %}
     
@@ -156,6 +157,11 @@ if ~newfolder
         case 'savePNGs' %next WriteExcelSheet
             load(fullfile(saveDir,'CleanSegs.mat'));
             load(fullfile(saveDir,'CleanHRcorr.mat'));
+            if glyphs
+                load(fullfile(saveDir,'CleanTensor.mat'));
+                load(fullfile(saveDir,'CleanMaps.mat'));
+                load(fullfile(saveDir,'contours.mat'));
+            end
         otherwise %start again
             lastFunc = ''; %just redo everything
     end
@@ -259,6 +265,10 @@ if strcmp(lastFunc,'SegmentalAnalysis')
     savePNGs(CleanMaps,Trace,contours,saveDir,lb_labels,hb_labels); %✓
     lastFunc = 'savePNGs';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
+end
+
+if strcmp(lastFunc,'savePNGs')&&glyphs
+    GlyphDTI(CleanTensor,CleanMaps,contours,lb_labels,hb_labels);
 end
 
 if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
