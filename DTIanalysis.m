@@ -48,9 +48,9 @@ end
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
 
 additionalID = 'affreg_HRcorr_dti'; %sj - tags for changes
-lb_labels = {'b0','b15','b50','b350'}; %labels of low b-values to output - change to {} for all
-hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
-doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
+lb_labels = {'b0','b15','b50'}; %labels of low b-values to output - change to {} for all
+hb_labels = {'b350','b750'}; %labels of high b-values to output - change to {} for all
+doAffineReg = false; %sj - true=perform affine registration / false=perform simple registration
 lastFunc = '';
 
 %% check/create folders
@@ -112,7 +112,7 @@ if ~newfolder
     end
     
 %     %{
-    lastFunc = 'RejectImages'; %override
+    lastFunc = ''; %override
     %}
     
     switch lastFunc
