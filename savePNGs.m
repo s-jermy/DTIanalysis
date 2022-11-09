@@ -24,7 +24,7 @@ for i=1:length(cardiacphases)
         fname1 = fullfile(saveDir,[cardiacphases{i} '_' slicelocation{j}]);
         mkdir(fname1);
 
-        M_myo = contours.myoMask{j};
+        M_myo = trace{1}{1}>10;%1;%contours.myoMask{j};
         under = trace{j}{1};
     
         mapnames = fieldnames(TMPmap);
@@ -48,7 +48,7 @@ for i=1:length(cardiacphases)
                     imagesc(under);axis off;axis equal;colormap(ax1,'gray');
 
                     ForFig = TMPmap.(mapnames{k}).(lowb{lb}).(highb{hb});
-                    fname = fullfile(fname1,[mapnames{k} '_' lowb{lb} '_' highb{hb} '.png']);
+                    fname = fullfile(fname1,[mapnames{k} '_' lowb{lb} '_' highb{hb} '_' patID '.png']);
                     switch mapnames{k}
                         case 'MD' %mean diffusivity
                             title([lowb{lb} '-' highb{hb} ' ' sprintf(['MD (' '\x03bc' 'm^2/ms)'])]);
@@ -88,6 +88,9 @@ for i=1:length(cardiacphases)
                             imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
                             colormap(ax2,pf_colormap('helix_angle'));
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
+                            hold on; plot(contours.endo{1}(:,1),contours.endo{1}(:,2),'r-');
+                            plot(contours.epi{1}(:,1),contours.epi{1}(:,2),'r-');
+                            plot(contours.rvi{1}(1),contours.rvi{1}(2),'rx');
                         case 'HA_filt' %filtered helix angle
                             title([lowb{lb} '-' highb{hb} ' Filtered Helix angle (°)']);
                             ax2 = axes;
