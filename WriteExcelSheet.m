@@ -1,4 +1,4 @@
-function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir,lowb_labels,highb_labels)
+function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir,patID,lowb_labels,highb_labels)
 
 % Get a handle to Sheets and select Sheet 1
 Sheets = Workbook.Sheets;
@@ -129,35 +129,35 @@ for i=1:length(cardiacphases)
                 % Base position
                 basePos = SheetSlice.Range('A15').Top;
 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['MD_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['MD_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 topleftfig = placeExcelFigure( Shapes, basePos, img );
                 topleftfig.Left = 10;
 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['FA_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['FA_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 fig1 = placeExcelFigure( Shapes, basePos, img );
                 fig1.Left = topleftfig.Left + topleftfig.Width+10;
 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['HA_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['HA_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 fig2 = placeExcelFigure( Shapes, basePos, img );
                 fig2.Left = fig1.Left + fig1.Width+10;
                 
                 basePos = basePos + topleftfig.Height+10;
 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['HA_filt_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['HA_filt_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 fig1 = placeExcelFigure( Shapes, basePos, img );
                 fig1.Left = 10;
                 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['E2A_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['E2A_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 fig2 = placeExcelFigure( Shapes, basePos, img );
                 fig2.Left = fig1.Left + fig1.Width+10;
                 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['TRA_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['TRA_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 fig1 = placeExcelFigure( Shapes, basePos, img );
                 fig1.Left = fig2.Left + fig2.Width+10;
                 
                 basePos = basePos + topleftfig.Height+10;
                 
-                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['SA_' (lowb{lb}) '_' (highb{hb}) '.png']);
+                img = fullfile(pwd,saveDir,[cardiacphases{i} '_' slicelocation{j}], ['SA_' (lowb{lb}) '_' highb{hb} '_' patID '.png']);
                 fig1 = placeExcelFigure( Shapes, basePos, img );
                 fig1.Left = 10;
 

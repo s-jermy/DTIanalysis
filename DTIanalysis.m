@@ -41,14 +41,16 @@ switch saveTagCell{1}
     case 'test'
         dataDirParent = 'D:\Steve\Documents\DiffusionData';
     otherwise
-        dataDirParent = pwd;
+        % dataDirParent = "D:\Users\liz\Documents\MATLAB\diffusion\data";
+        dataDirParent = "D:\Users\liz\Documents\diffusion\Zak\HCM dicoms";
 end
 
 %%
+additionalID = 'HRcorr_dti'; %sj - tags for changes
+
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
 
-additionalID = 'affreg_HRcorr_dti'; %sj - tags for changes
-lb_labels = {'b0','b15','b50'}; %labels of low b-values to output - change to {} for all
+lb_labels = {'b0','b15','b50','b150'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b750'}; %labels of high b-values to output - change to {} for all
 doAffineReg = false; %sj - true=perform affine registration / false=perform simple registration
 lastFunc = '';
@@ -112,7 +114,7 @@ if ~newfolder
     end
     
 %     %{
-    lastFunc = ''; %override
+%      lastFunc = 'hrCorrection'; %override
     %}
     
     switch lastFunc
@@ -256,7 +258,7 @@ end
 
 % export images and data to excel
 if strcmp(lastFunc,'SegmentalAnalysis')
-    savePNGs(CleanMaps,Trace,contours,saveDir,lb_labels,hb_labels); %✓
+    savePNGs(CleanMaps,Trace,contours,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓
     lastFunc = 'savePNGs';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
 end
@@ -264,7 +266,7 @@ end
 if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
     warning('off','MATLAB:MKDIR:DirectoryExists');
     [Excel, Workbook] = StartExcel; %✓
-    WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+    WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
     warning('on','MATLAB:MKDIR:DirectoryExists');
     saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
 end

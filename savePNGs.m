@@ -1,4 +1,4 @@
-function savePNGs(map_dicom,trace,contours,saveDir,lowb_labels,highb_labels)
+function savePNGs(map_dicom,trace,contours,saveDir,patID,lowb_labels,highb_labels)
 % in:
 % map_dicom - struct containing diffusion maps
 % trace - struct containing average image for each b-value
