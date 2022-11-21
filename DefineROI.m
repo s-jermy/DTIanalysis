@@ -32,9 +32,16 @@ for i = 1:length(trace)
     RoiImage = trace{i}{2}; %use the b50 trace of each slice to draw ROIs
     [Xq,Yq] = meshgrid(1:size(RoiImage,2),1:size(RoiImage,1));
     
-    [epi,endo,rvi] = Segmentation(RoiImage,200);
-%     epi = FlipCWtoACW(contours2.epi{i});
-%     endo = FlipCWtoACW(contours2.endo{i});
+    try %reuse and edit previously defined contours        
+        endo = contours.endo{i}; %make sure these variables exist otherwise create a new set
+        epi = contours.epi{i};
+        rvi = contours.rvi{i};
+        [epi,endo,rvi] = EditContours(RoiImage,epi,endo,rvi);
+    catch
+        [epi,endo,rvi] = Segmentation(RoiImage,200);
+    %     epi = FlipCWtoACW(contours2.epi{i});
+    %     endo = FlipCWtoACW(contours2.endo{i});
+    end
     P_Endo{i} = endo;
     P_Epi{i} = epi;
     P_RVI{i} = rvi;
@@ -87,7 +94,7 @@ figure;
 ax = imagesc(IM,[min(IM(:)) max(IM(:))]); % here just view the image you want to base your borders on
 % ax.YData = fliplr(ax.YData);
 % ax.Parent.YDir = 'normal';
-colormap('gray');title(gca,'Draw an ROI around the epicardium');
+colormap('gray');title(gca,'Draw an ROI around the epicardium');axis equal
 
 epiRoi = drawpolyline('Color',[0 1 0]);customWait(epiRoi);
 epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
@@ -104,6 +111,79 @@ endoPos(end+1,:) = endoPos(1,:); %add first point to end for interpolation
 
 title(gca,'Select the anterior interventricular junction');
 rviRoi = drawpoint('Label','RVI','Color',[0 0 1]);
+rviPos = rviRoi.Position;
+
+epiRoi.Visible = 'off';
+endoRoi.Visible = 'off';
+rviRoi.Visible = 'off';
+
+title(gca,'');
+
+epiInterp = linspace(1,size(epiPos,1),nInterp+1); %interpolate one extra point so it can be removed later
+epiInterp = epiInterp(1:end-1); %remove last point, it is the same as the first
+tmp_epi(:,1) = interp1(epiPos(:,1),epiInterp,'makima');
+tmp_epi(:,2) = interp1(epiPos(:,2),epiInterp,'makima');
+epi2 = interparc(nInterp,tmp_epi(:,1),tmp_epi(:,2),'pchip'); %gives equally spaced points around ROI
+
+endoInterp = linspace(1,size(endoPos,1),nInterp+1); %interpolate one extra point so it can be removed later
+endoInterp = endoInterp(1:end-1); %remove last point, same as first
+tmp_endo(:,1) = interp1(endoPos(:,1),endoInterp,'makima');
+tmp_endo(:,2) = interp1(endoPos(:,2),endoInterp,'makima');
+endo2 = interparc(nInterp,tmp_endo(:,1),tmp_endo(:,2),'pchip'); %gives equally spaced points around ROI
+
+rvi = rviPos;
+
+epi = FlipCWtoACW(epi2); %sj - ensure ROIs are anticlockwise, needed for dti calc
+endo = FlipCWtoACW(endo2);
+
+hold on;
+plot(epi(:,1),epi(:,2),'g.-','LineWidth',2.25)
+plot(endo(:,1),endo(:,2),'r.-','LineWidth',2.25)
+plot(rvi(:,1),rvi(:,2),'bx','LineWidth',2.25)
+hold off;
+
+pause(1);
+
+close;
+
+end
+
+function [epi, endo, rvi] = EditContours(IM, epi, endo, rvi)
+% in:
+% IM - 2D image matrix
+% epi - [n x 2] of points for epicardium
+% endo - [n x 2] of points for endocardium
+% rvi - RV insertion point
+%
+% out:
+% epi - [n x 2] of points for epicardium
+% endo - [n x 2] of points for endocardium
+% rvi - RV insertion point
+
+figure;
+ax = imagesc(IM,[min(IM(:)) max(IM(:))]); % here just view the image you want to base your borders on
+% ax.YData = fliplr(ax.YData);
+% ax.Parent.YDir = 'normal';
+colormap('gray');title(gca,'Edit epicardium ROI');axis equal
+
+nInterp = size(epi,1);
+
+epiRoi = drawpolyline('Color',[0 1 0],'Position',epi(1:5:end,:));customWait(epiRoi);
+epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
+
+epiPos = epiRoi.Position;
+epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
+
+title(gca,'Edit endocardium ROI');
+endoRoi = drawpolyline('Color',[1 0 0],'Position',endo(1:5:end,:));customWait(endoRoi);
+endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
+
+endoPos = endoRoi.Position;
+endoPos(end+1,:) = endoPos(1,:); %add first point to end for interpolation
+
+title(gca,'Edit anterior LV/RV junction');
+rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);customWait(rviRoi);
+rviRoi.Label = 'RVI';rviRoi.LabelAlpha = 0.6;
 rviPos = rviRoi.Position;
 
 epiRoi.Visible = 'off';
