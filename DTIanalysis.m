@@ -17,6 +17,9 @@ narginchk(0,3)
 % clearvars
 close all
 
+oldpath = path;
+path(fullfile(pwd,'tools'),oldpath);
+
 %% variable check
 if nargin<1 %default operation
     varargin{1} = 'default'; %saveTag

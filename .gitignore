@@ -25,3 +25,4 @@ superellipsoid_demo/superquadric.m
 superellipsoid_demo/supertoroid.m
 *.asv
 *.m.bak
+/HCM dicoms/
