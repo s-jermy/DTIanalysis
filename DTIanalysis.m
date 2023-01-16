@@ -116,9 +116,9 @@ if ~newfolder
         lastFunc = '';
     end
     
-%     %{
-%      lastFunc = 'hrCorrection'; %override
-    %}
+    
+%     lastFunc = 'Registration'; % to reuse contours
+    
     
     switch lastFunc
         case 'AnalyseDicoms' %next CategoriseAndConstrain
