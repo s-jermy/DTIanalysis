@@ -267,11 +267,15 @@ if strcmp(lastFunc,'SegmentalAnalysis')
 end
 
 if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
-    warning('off','MATLAB:MKDIR:DirectoryExists');
-    [Excel, Workbook] = StartExcel; %✓
-    WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
-    warning('on','MATLAB:MKDIR:DirectoryExists');
-    saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
+    if (ispc)
+        warning('off','MATLAB:MKDIR:DirectoryExists');
+        [Excel, Workbook] = StartExcel; %✓
+        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        warning('on','MATLAB:MKDIR:DirectoryExists');
+        saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
+    else
+        WriteExcelSheetMac(CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+    end
 end
 
 %% fix matlab stupidity
