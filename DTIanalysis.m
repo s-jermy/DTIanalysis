@@ -65,7 +65,7 @@ end
 if isempty(dataDir)
     dataDir = uigetdir(dataDirParent); %choose bottom level folder of images - i.e. folder containing no subfolders
 end
-dirlisting = dir(dataDir);
+dirlisting = dir(fullfile(dataDir,'**')); %find all in the main directory including subfolders
 
 splitdir = regexp(dataDir,filesep,'split');
 splitdir = splitdir(~cellfun('isempty',splitdir));
@@ -111,7 +111,7 @@ if ~newfolder
         lastFunc = '';
     end
     
-%     %{
+    %{
     lastFunc = 'RejectImages'; %override
     %}
     
