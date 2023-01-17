@@ -1,4 +1,4 @@
-for i = 1:22
+for i = 1:23
     DTIanalysis('steve_cubic',1,i);
 end
 for i = 1:8

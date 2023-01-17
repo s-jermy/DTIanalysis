@@ -41,8 +41,9 @@ switch tag
             'CUBIC\20211126_1427_STEVE_DTI_013\CS',...	#18
             'CUBIC\20220117_1341_STEVE_DTI_014\BH',...	#19
             'CUBIC\20220117_1341_STEVE_DTI_014\CS',...	#20
-            'CUBIC\20220314_1602_STEVE_DTI_016\BH',...	#21
-            'CUBIC\20220314_1602_STEVE_DTI_016\CS'...	#22
+            'CUBIC\20220117_1341_STEVE_DTI_014\FB',...	#21
+            'CUBIC\20220314_1602_STEVE_DTI_016\BH',...	#22
+            'CUBIC\20220314_1602_STEVE_DTI_016\CS'...	#23
             };
     case 'steve_cubic_64'
         files={...
