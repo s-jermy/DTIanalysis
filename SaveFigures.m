@@ -12,6 +12,9 @@ for i=1:length(hf)
         figure(hf{i}{j});
         op = hf{i}{j}.OuterPosition; %sj
         hf{i}{j}.OuterPosition = [0 0 width height]; %sj - change to standard size
+        if (ismac)
+            pause(0.5);
+        end
         warning('off','MATLAB:MKDIR:DirectoryExists');
         mkdir(fullfile(saveDir,additionalTag));
         warning('on','MATLAB:MKDIR:DirectoryExists');
