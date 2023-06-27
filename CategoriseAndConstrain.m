@@ -86,15 +86,17 @@ for i = 1:length(uCp1)
 
             %% Constrain
             % Draw ROI, or load previously drawn ROI
+            ima = single(dicom2{ind}(fixedImage).image);
             try
                 WC = nfo2{ind}.Info(fixedImage).WindowCenter;
-                hWW = nfo2{ind}.Info(fixedImage).WindowWidth/2;
-                roifig = figure;clf;
-                imshow(dicom2{ind}(fixedImage).image,[(WC-hWW) (WC+hWW)]);
+                WW = nfo2{ind}.Info(fixedImage).WindowWidth;
+                low = WC-.5 - (WW-1)/2; high = WC-.5 + (WW-1)/2; % for mag image
+                ima(ima<=low) = 0; ima(ima>high) = 255;
+                ima = ((ima-(WC-.5))/(WW-1)+.5)*255;
             catch
-                roifig = figure;clf;
-                imshow(dicom2{ind}(fixedImage).image,[]);
             end
+            roifig = figure;clf;
+            imshow(uint8(ima),[]);
 
             roifig.Name = 'Drag a rectangle around heart to constrain registration';	%sj - I added an extra roi here - just a rectangle to roughly cover whole heart - to constrain registration - don't make too small
             recRoi = drawrectangle('Color',[0 0 1]);customWait(recRoi);

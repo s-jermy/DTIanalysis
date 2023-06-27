@@ -98,16 +98,20 @@ for i=1:length(dicom)
             ah{i}{bV}{subplotindex} = subplot(ha(subplotindex)); % diffusion dirs columns x no of images per dirn rows; numbered by row, i.e. 1 2 3;4 5 6...
 
             warning('off','all');
+
+            mag = single(dicom2{i}{bV}(j).image(imrangey,imrangex));
+
+            try
             % window individual images before combining into one - modified
             % imshowpair
-%             WC = TMPnfo{i}{bV}(j).WindowCenter;
-%             WW = TMPnfo{i}{bV}(j).WindowWidth;
-            WC = 62.5; WW = 125;
+            WC = TMPnfo{i}{bV}(j).WindowCenter;
+            WW = TMPnfo{i}{bV}(j).WindowWidth;
             low = WC-.5 - (WW-1)/2; high = WC-.5 + (WW-1)/2; % for mag images
-            
-            mag = single(dicom2{i}{bV}(j).image(imrangey,imrangex));
-            mag(mag<=low) = low; mag(mag>high) = high;
+            mag(mag<=low) = 0; mag(mag>high) = 255;
             mag = ((mag-(WC-.5))/(WW-1)+.5)*255;
+            catch
+            end
+            
             mag = uint8(mag);
             
             if isfield(dicom2{i}{bV}(j),'phaseimage')
