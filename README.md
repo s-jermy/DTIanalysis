@@ -15,6 +15,7 @@ Radial vector - RadVect - cross(long,circ) - center-out
 Same as Ferreira et al 2014 JCMR
 
 Helix angle
+
 	The HA represents the orientation ofthe myofiber (projected in the local tangent plane) with respect to the circumferential direction.
 	Moulin et al 2020 PlosOne
 
@@ -30,6 +31,7 @@ Helix angle
 		atan(dot(E1RadProj,LongVect)/dot(E1RadProj,CircVect))
 
 Transverse angle
+
 	The TA measures the angle between the myofiber direction projected onto the local horizontal plane (normal to the epicardium) and the circumferential direction.
 	Moulin et al 2020 PlosOne
 	
@@ -43,6 +45,7 @@ Transverse angle
 		atan(dot(E1LongProj,RadVect)/dot(E1LongProj,CircVect))
 
 Second eigenvector angle
+
 	...after projecting E2 onto the plane normal to E1 projection (E2A)
 	Moulin et al 2020 PlosOne
 	
@@ -57,18 +60,18 @@ Second eigenvector angle
 	The E1 radial projection component of the E2 vector is removed to get the projection of the E2 vector onto the  mid fibre plane.
 		E2Proj = E2Vect - E1RadProj*dot(E1RadProj,E2Vect)
 		
-		Notes on dealing with vectors in Matlab
+Notes on dealing with vectors in Matlab
 
-A note: Matlab generally uses a right-handed co-ordinate system when dealing with plotted data. However, when an image is shown it uses a left-handed co-ordinate system 
-which is annoying but things kind of still work normally with a few tricks.
-Everything below is treated as if the co-ordinate system is left-handed, annoying but deal with it.
+	A note: Matlab generally uses a right-handed co-ordinate system when dealing with plotted data. However, when an image is shown it uses a left-handed co-ordinate system 
+	which is annoying but things kind of still work normally with a few tricks.
+	Everything below is treated as if the co-ordinate system is left-handed, annoying but deal with it.
 
-When showing an image i.e.
-	fig = imshow(Trace{1}{1})
-A contour can then be plotted on top of the image i.e.
-	hold on
-	plot(epi(:,1),epi(:,2))
+	When showing an image i.e.
+		fig = imshow(Trace{1}{1})
+	A contour can then be plotted on top of the image i.e.
+		hold on
+		plot(epi(:,1),epi(:,2))
 
-When this is done the first dimension is the y-direction, vertical, and increases top to bottom.
-The second dimension is the x-direction, horizontal, and increases left to right.
-We will define the third dimension, the z-direction, as increasing out of the screen or as increasing from apex to base.
+	When this is done the first dimension is the y-direction, vertical, and increases top to bottom.
+	The second dimension is the x-direction, horizontal, and increases left to right.
+	We will define the third dimension, the z-direction, as increasing out of the screen or as increasing from apex to base.
