@@ -11,6 +11,10 @@ function DTIanalysis(varargin)
 %     description:
 %     Main script for running DTIanalysis. If no inputs are given, it is
 %     equivalent to running DTIanalysis('default',0).
+% 
+%     REQUIRED TOOLBOXES:
+%     Curve Fitting toolbox
+%     Image Processing toolbox
 
 narginchk(0,3)
 
@@ -35,11 +39,11 @@ saveTag = varargin{1};
 saveTagCell = regexp(saveTag,'_','split');
 switch saveTagCell{1}
     case 'steve'
-        dataDirParent = 'D:\Steve\Documents\DiffusionData';
+        dataDirParent = 'C:\Users\User\Documents\DiffusionData';
     case 'zak'
-        dataDirParent = 'D:\Steve\Documents\DiffusionData\Zak';
+        dataDirParent = 'C:\Users\User\Documents\DiffusionData\Zak';
     case 'test'
-        dataDirParent = 'D:\Steve\Documents\DiffusionData';
+        dataDirParent = 'C:\Users\User\Documents\DiffusionData';
     otherwise
         dataDirParent = pwd;
 end
@@ -66,7 +70,7 @@ end
 if isempty(dataDir)
     dataDir = uigetdir(dataDirParent); %choose bottom level folder of images - i.e. folder containing no subfolders
 end
-dirlisting = dir(dataDir);
+dirlisting = dir(fullfile(dataDir,'**')); %find all in the main directory including subfolders
 
 splitdir = regexp(dataDir,filesep,'split');
 splitdir = splitdir(~cellfun('isempty',splitdir));
@@ -272,11 +276,15 @@ if strcmp(lastFunc,'savePNGs')&&glyphs
 end
 
 if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
-    warning('off','MATLAB:MKDIR:DirectoryExists');
-    [Excel, Workbook] = StartExcel; %✓
-    WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
-    warning('on','MATLAB:MKDIR:DirectoryExists');
-    saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
+    if (ispc)
+        warning('off','MATLAB:MKDIR:DirectoryExists');
+        [Excel, Workbook] = StartExcel; %✓
+        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        warning('on','MATLAB:MKDIR:DirectoryExists');
+        saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
+    else
+        WriteExcelSheetMac(CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+    end
 end
 
 %% fix matlab stupidity

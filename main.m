@@ -1,4 +1,4 @@
-for i = 1:22
+for i = 1:23
     DTIanalysis('steve_cubic',1,i);
 end
 for i = 1:8
@@ -16,7 +16,7 @@ end
 for i = 1:20
     DTIanalysis('steve_oxford_2021',1,i);
 end
-for i = 1
+for i = 1:6
     DTIanalysis('steve_cmo',1,i);
 end
 for i = 1:11
