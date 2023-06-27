@@ -11,13 +11,27 @@ function [cwd] = ChooseFolder(tag,ind)
 %     Picks folder of subject when running StartScript as a batch
 %     operation.
 
+if isempty(ind)
+    ind = 1;
+end
+
 cwd = '';
 err = 0;
 
 switch tag
     case 'steve_cmo'
         files={...
-            'CMO\20220203_1417_NDHLOVU^TALKMORE'...	#1
+            % 'CMO\20220816_1404_STEVE_CMO_001\BH',...	
+            % 'CMO\20230310_1035_STEVE_CMO_006\BH',...	
+            % 'CMO\20230310_1035_STEVE_CMO_006\CS',...	
+            % 'CMO\20230217_1404_STEVE_CMO_005\BH',...
+            % 'CMO\20230217_1404_STEVE_CMO_005\CS',...
+            'CMO\20220816_1404_STEVE_CMO_002\BH',...	#1
+            'CMO\20220816_1404_STEVE_CMO_002\CS',...	#2
+            'CMO\20230203_1405_STEVE_CMO_004\BH',...	#3
+            'CMO\20230203_1405_STEVE_CMO_004\CS',...	#4
+            'CMO\20230310_1440_STEVE_CMO_007\BH',...	#5
+            'CMO\20230310_1440_STEVE_CMO_007\CS',...	#6
             };
     case 'steve_cubic'
         files={...

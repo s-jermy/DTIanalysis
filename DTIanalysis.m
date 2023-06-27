@@ -11,6 +11,10 @@ function DTIanalysis(varargin)
 %     description:
 %     Main script for running DTIanalysis. If no inputs are given, it is
 %     equivalent to running DTIanalysis('default',0).
+% 
+%     REQUIRED TOOLBOXES:
+%     Curve Fitting toolbox
+%     Image Processing toolbox
 
 narginchk(0,3)
 
@@ -35,11 +39,11 @@ saveTag = varargin{1};
 saveTagCell = regexp(saveTag,'_','split');
 switch saveTagCell{1}
     case 'steve'
-        dataDirParent = 'D:\Steve\Documents\DiffusionData';
+        dataDirParent = 'C:\Users\User\Documents\DiffusionData';
     case 'zak'
-        dataDirParent = 'D:\Steve\Documents\DiffusionData\Zak';
+        dataDirParent = 'C:\Users\User\Documents\DiffusionData\Zak';
     case 'test'
-        dataDirParent = 'D:\Steve\Documents\DiffusionData';
+        dataDirParent = 'C:\Users\User\Documents\DiffusionData';
     otherwise
         dataDirParent = pwd;
 end
@@ -265,7 +269,7 @@ if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
     if (ispc)
         warning('off','MATLAB:MKDIR:DirectoryExists');
         [Excel, Workbook] = StartExcel; %✓
-        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
         warning('on','MATLAB:MKDIR:DirectoryExists');
         saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
     else
