@@ -47,48 +47,35 @@ function plotDTI(varargin) %sj
 % abarmpou at cise dot ufl dot edu
 %------------------------------------------------------------------------------------
 %
-% SJ - changed to variable input so I can set delta as the (n)umber of 
-% points, which map, (c)olor(m)ap and colour (lim)its. narginchk to keep 
-% number of variables between 1 and 7. axescheck allows you to print to a 
-% specific set of axes
-% SJ - inargs{1,2,3,4,5,6} = {D,delta,n,map,cm,lim}
-% SJ - added pf_colormap to colour glyphs using tensor maps (HA for now)
-% SJ - 
+% SJ - changed to variable input so I can set delta and the nu(m)ber of 
+% points. narginchk to keep number of variables between 1 and 4. axescheck 
+% allows you to print to a specific set of axes
+% SJ - inargs{1,2,3} = {D,delta,m}
+% SJ - changes made to use superquadric glyphs as per 10.1002/mrm.20318
+% SJ - moved map, colormap, and colour limits into a separate function
+% 
 %------------------------------------------------------------------------------------
 
-narginchk(1,7); %sj
+narginchk(1,4); %sj
 [ha,inargs,nargs]=axescheck(varargin{:}); %sj
 
 %sj - default values
-D = inargs{1}; %sj
+D = 1; %sj
 delta = 1; %sj - distance between glyphs
-n = 50; %sj - number of points in ellipsoid
-% p = 4; %sj - superellipsoid
-map = []; %sj
-cm = ''; %sj
-lim = []; %sj
+gama = 3; % sj - glyph sharpness ( 3 - 6 )
+m = 50; %sj - number of points in ellipsoid (+1)
+c = [1/3 1/3 1/3]; %sj - linear, planar, spherical anisotropy
 
 % sj
+if nargs>0
+    D = inargs{1}; %sj
+end
 if nargs>1
     delta = inargs{2};
 end
 if nargs>2
-    n = inargs{3};
+    m = inargs{3};
 end
-if nargs>3
-    map = inargs{4};
-end
-if nargs>4
-    cm = inargs{5};
-end
-if nargs>5
-    lim = inargs{6};
-end
-
-% sj - superellipsoid
-% if numel(p)==1
-% 	p=repmat(p,[1 3]);
-% end
 
 sz=size(D);
 if length(sz)==2
@@ -100,10 +87,6 @@ elseif length(sz)==4
 end
 
 ha=newplot(ha); %sj
-if ~(isempty(cm)||isempty(lim))
-    colormap(pf_colormap(cm));
-    ha.CLim = lim; %sj
-end
 hold on
 for i=1:nx
     for j=1:ny
@@ -111,24 +94,44 @@ for i=1:nx
         
         if sum(d(:))~=0
             d = normalize(d,'norm',Inf); %sj - normalise vectors to maximum eigenvalue
-            [X,Y,Z]=ellipsoid(0,0,0,d(1),d(2),d(3),n);
-%             [X,Y,Z]=superellipsoid([0 0 0],d,p,n);
-            sz=size(X);
+            ds = sort(d,'descend');
+            c(1) = (ds(1)-ds(2))/sum(ds(:));
+            c(2) = 2*(ds(2)-ds(3))/sum(ds(:));
+            c(3) = 1 - c(1) - c(2);
+            % [dX,dY,dZ]=ellipsoid(0,0,0,d(1),d(2),d(3),m);
+
+            if c(1)>=c(2)
+                e = (1-c(2))^gama; %sj - horizontal roundness
+                n = (1-c(1))^gama; %sj - vertical roundness
+            else
+                n = (1-c(2))^gama;
+                e = (1-c(1))^gama;
+            end
+            [X,Y,Z]=superquadric(n,e,m); %sj - see Ennis et al MRM 2005 
+
+            if c(1)>=c(2)
+                tmp = Z;
+                Z = X;
+                X = tmp;
+                Y = -Y;
+            end
+
+            %sj - scale glyph to eigenvalues
+            dX = d(1).*X;
+            dY = d(2).*Y;
+            dZ = d(3).*Z;
+            
+            sz=size(dX);
             for x=1:sz(1)
                 for y=1:sz(2)
-                    A=[X(x,y) Y(x,y) Z(x,y)];
-                    A = v*A';
-                    X(x,y)=A(1);Y(x,y)=A(2);Z(x,y)=A(3);
+                    A=[dX(x,y) dY(x,y) dZ(x,y)];
+                    A = v*A'; %sj - orient the glyph to the eigenvectors
+                    dX(x,y)=A(1);dY(x,y)=A(2);dZ(x,y)=A(3);
                 end
             end
-            X=X+(i-1)*delta;
-            Y=Y+(j-1)*delta;
-            h = surf(X,Y,Z,'parent',ha);
-            
-            if ~isempty(map)
-                cdata = repmat(map(i,j),n+1);
-                h.CData = cdata;
-            end
+            dX=dX+(i-1)*delta; %sj - shift the glyph to the appropriate position
+            dY=dY+(j-1)*delta;
+            h = surf(dX,dY,dZ,'parent',ha);
         end
     end
 end
