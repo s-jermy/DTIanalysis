@@ -77,7 +77,12 @@ splitdir = splitdir(~cellfun('isempty',splitdir));
 additionalID = [additionalID '_' splitdir{end}];
 newfolder = false;
 
-dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
+try
+    dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
+catch
+    tmp = strsplit(splitdir{end-1},'_');
+    dcmInfo.PatientID = char(join(tmp(2:end),'_'));
+end
 
 saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
 % warning('off','MATLAB:MKDIR:DirectoryExists');
