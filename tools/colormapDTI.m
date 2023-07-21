@@ -48,11 +48,15 @@ end
 h = ha.Children; %sj - get the glyph surfaces from the axis
 
 for ii=1:length(h)
-    x = h(ii).XData(1,1); %find position
-    y = h(ii).YData(1,1);
+    xmin = min(h(ii).XData(:));
+    xmax = max(h(ii).XData(:));
+    x = round((xmin+xmax)/2); %find x position
+    ymin = min(h(ii).YData(:));
+    ymax = max(h(ii).YData(:));
+    y = round((ymin+ymax)/2); %find y position
 
-    i = x/delta + 1; %transform back to pixel coordinates
-    j = y/delta + 1;
+    j = x/delta + 1; %transform back to pixel coordinates
+    i = y/delta + 1;
 
     if ~isempty(map)
         cdata = repmat(map(i,j),m+1); %get value from map
