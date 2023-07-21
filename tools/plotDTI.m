@@ -48,15 +48,15 @@ function plotDTI(varargin) %sj
 %------------------------------------------------------------------------------------
 %
 % SJ - changed to variable input so I can set delta and the nu(m)ber of 
-% points. narginchk to keep number of variables between 1 and 4. axescheck 
+% points. narginchk to keep number of variables between 2 and 4. axescheck 
 % allows you to print to a specific set of axes
-% SJ - inargs{1,2,3} = {D,delta,m}
+% SJ - inargs{{0},1,2,3} = {{ha},D,delta,m}
 % SJ - changes made to use superquadric glyphs as per 10.1002/mrm.20318
 % SJ - moved map, colormap, and colour limits into a separate function
 % 
 %------------------------------------------------------------------------------------
 
-narginchk(1,4); %sj
+narginchk(2,4); %sj
 [ha,inargs,nargs]=axescheck(varargin{:}); %sj
 
 %sj - default values
@@ -79,58 +79,61 @@ end
 
 sz=size(D);
 if length(sz)==2
-    nx=1;ny=1;
+    ny=1;nx=1;
 elseif length(sz)==3
-    nx=sz(3);ny=1;
+    ny=sz(3);nx=1;
 elseif length(sz)==4
-    nx=sz(3);ny=sz(4);
+    ny=sz(3);nx=sz(4);
 end
 
 ha=newplot(ha); %sj
 hold on
-for i=1:nx
-    for j=1:ny
+for i=1:ny
+    for j=1:nx
         [v,d]=eig(squeeze(D(:,:,i,j)),'vector');
+        d = abs(d);
         
         if sum(d(:))~=0
             d = normalize(d,'norm',Inf); %sj - normalise vectors to maximum eigenvalue
             ds = sort(d,'descend');
-            c(1) = (ds(1)-ds(2))/sum(ds(:));
-            c(2) = 2*(ds(2)-ds(3))/sum(ds(:));
-            c(3) = 1 - c(1) - c(2);
+
             % [dX,dY,dZ]=ellipsoid(0,0,0,d(1),d(2),d(3),m);
 
-            if c(1)>=c(2)
-                e = (1-c(2))^gama; %sj - horizontal roundness
-                n = (1-c(1))^gama; %sj - vertical roundness
-            else
+            %% see Ennis et al MRM 2005
+            c(1) = (ds(1)-ds(2))/sum(ds(:)); %cl linear anisotropy
+            c(2) = 2*(ds(2)-ds(3))/sum(ds(:)); %cp planar anisotropy
+            c(3) = 1 - c(1) - c(2); %cs spherical anisotropy
+            if c(1)>=c(2) %cl>=cp
+                e = (1-c(2))^gama; %sj - alpha - horizontal roundness
+                n = (1-c(1))^gama; %sj - beta - vertical roundness
+            else %cl<cp
                 n = (1-c(2))^gama;
                 e = (1-c(1))^gama;
             end
-            [X,Y,Z]=superquadric(n,e,m); %sj - see Ennis et al MRM 2005 
+            [X,Y,Z]=superquadric(n,e,m); 
 
-            if c(1)>=c(2)
+            if c(1)>=c(2) %cl>=cp
                 tmp = Z;
                 Z = X;
                 X = tmp;
                 Y = -Y;
             end
 
-            %sj - scale glyph to eigenvalues
-            dX = d(1).*X;
+            %% sj - scale, rotate, and shift glyph
+            dX = d(1).*X; %sj - scale the glyph to the eigenvalues
             dY = d(2).*Y;
             dZ = d(3).*Z;
             
             sz=size(dX);
             for x=1:sz(1)
                 for y=1:sz(2)
-                    A=[dX(x,y) dY(x,y) dZ(x,y)];
-                    A = v*A'; %sj - orient the glyph to the eigenvectors
+                    A=[dX(x,y); dY(x,y); dZ(x,y)];
+                    A = v*A; %sj - orient the glyph to the eigenvectors
                     dX(x,y)=A(1);dY(x,y)=A(2);dZ(x,y)=A(3);
                 end
             end
-            dX=dX+(i-1)*delta; %sj - shift the glyph to the appropriate position
-            dY=dY+(j-1)*delta;
+            dX=dX+(j-1)*delta; %sj - shift the glyph to the appropriate position
+            dY=dY+(i-1)*delta;
             h = surf(dX,dY,dZ,'parent',ha);
         end
     end
