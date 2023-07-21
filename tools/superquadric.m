@@ -31,8 +31,8 @@ cosv = cospi(v);
 sinv = sinpi(v);
 cosu = cospi(u);
 sinu = sinpi(u);
-cosv(1) = 0;
-cosv(m+1) = 0;
+sinv(1) = 0;
+sinv(m+1) = 0;
 sinu(1) = 0;
 sinu(m+1) = 0;
 
