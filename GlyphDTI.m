@@ -1,4 +1,4 @@
-function GlyphDTI(tensor_dicom,map_dicom,contours,lowb_labels,highb_labels)
+function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,lowb_labels,highb_labels)
 
 % in:
 % tensor_dicom - struct containting tensors
@@ -9,9 +9,11 @@ function GlyphDTI(tensor_dicom,map_dicom,contours,lowb_labels,highb_labels)
 % 
 % description:
 
-
+fignum = 1;
+figures = struct;
 cardiacphases = fieldnames(tensor_dicom);
 
+%% loop through different cardiac phases and slice locations
 for i=1:length(cardiacphases)
     slicelocation = fieldnames(map_dicom.(cardiacphases{i}));
     for j=1:length(slicelocation)
@@ -27,6 +29,7 @@ for i=1:length(cardiacphases)
         
         mapnames = fieldnames(TMPmap);
 
+        %% loop through applicable low and high b-values
         lowb = fieldnames(TMPtensor.tensor);
         for lb=1:length(lowb)
             if ~isempty(lowb_labels)
@@ -46,13 +49,13 @@ for i=1:length(cardiacphases)
                 tensor = permute(tensor,[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
                 D = tensor.*M_myo;
 
-                fignum = 1;
                 figure(fignum);
                 ha = axes;
                 plotDTI(ha,D,2,100);
                 drawnow
 
-                for k=1:length(mapnames)
+                %% cycle through different maps you wish to use to colour the glyphs
+                for k=1:length(mapnames)-1
                     map = TMPmap.(mapnames{k}).(lowb{lb}).(highb{hb});
                     switch mapnames{k}
                         % case 'MD' %mean diffusivity
@@ -88,8 +91,8 @@ for i=1:length(cardiacphases)
                             lim = [];
                     end
 
-                    if ~isempty(map)
-                        if fignum>1 %copy figure so as to not overwrite with new colormap
+                    if ~isempty(map) %don't do anything if there is no map
+                        if fignum>1 %copy existing figure so as to not overwrite with new colormap
                             figure(fignum);
                             ax = axes;
                             copyobj(ha.Children,ax);
@@ -98,8 +101,11 @@ for i=1:length(cardiacphases)
                             axis equal
                             axis off
                         end
-                        colormapDTI(ha,map,cmap,lim,2,100);
+                        colormapDTI(ha,map,cmap,lim,2,100); %add colour to the glyphs based on map
                         drawnow;
+                        hf{fignum} = figure(fignum);
+                        hf{fignum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
+                        hf{fignum}.Tag = [cardiacphases{i} '_' slicelocation{j}];
                         fignum = fignum+1;
                     end
                 end
@@ -107,3 +113,5 @@ for i=1:length(cardiacphases)
         end
     end
 end
+
+figures.hfig = hf;
