@@ -17,6 +17,7 @@ cardiacphases = fieldnames(tensor_dicom);
 for i=1:length(cardiacphases)
     slicelocation = fieldnames(map_dicom.(cardiacphases{i}));
     for j=1:length(slicelocation)
+        skipcopy = 1; %reset each time there is a new slice location/cardiac phase
         TMPtensor = tensor_dicom.(cardiacphases{i}).(slicelocation{j});
         TMPmap = map_dicom.(cardiacphases{i}).(slicelocation{j});
         
@@ -92,10 +93,10 @@ for i=1:length(cardiacphases)
                     end
 
                     if ~isempty(map) %don't do anything if there is no map
-                        if fignum>1 %copy existing figure so as to not overwrite with new colormap
+                        if fignum>1&&~skipcopy
                             figure(fignum);
                             ax = axes;
-                            copyobj(ha.Children,ax);
+                            copyobj(ha.Children,ax); %copy existing figure so as to not overwrite with new colormap
                             ha = ax;
 
                             axis equal
@@ -107,6 +108,7 @@ for i=1:length(cardiacphases)
                         hf{fignum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
                         hf{fignum}.Tag = [cardiacphases{i} '_' slicelocation{j}];
                         fignum = fignum+1;
+                        skipcopy = 0;
                     end
                 end
             end
