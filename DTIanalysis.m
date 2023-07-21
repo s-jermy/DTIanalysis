@@ -21,6 +21,8 @@ narginchk(0,3)
 % clearvars
 close all
 
+addpath(genpath('tools')); %add tools and subfolders to the search path
+
 %% variable check
 if nargin<1 %default operation
     varargin{1} = 'default'; %saveTag
@@ -52,7 +54,7 @@ end
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
 
 additionalID = 'glyph_dti'; %sj - tags for changes
-lb_labels = {'b0','b15','b50','b350'}; %labels of low b-values to output - change to {} for all
+lb_labels = {'b50','b350'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
 glyphs = true; %sj - show ellipsoid glyphs of tensors
@@ -86,6 +88,7 @@ end
 
 saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
 % warning('off','MATLAB:MKDIR:DirectoryExists');
+
 try
     if ~isfolder(saveDir)
         mkdir(saveDir); %create a new folder for the save directory
@@ -121,8 +124,8 @@ if ~newfolder
         lastFunc = '';
     end
     
-    %{
-    lastFunc = 'RejectImages'; %override
+    %%{
+    lastFunc = 'savePNGs'; %override
     %}
     
     switch lastFunc
@@ -163,14 +166,17 @@ if ~newfolder
             load(fullfile(saveDir,'contours.mat'));
             load(fullfile(saveDir,'CleanSegs.mat'));
             load(fullfile(saveDir,'CleanHRcorr.mat'));
-        case 'savePNGs' %next WriteExcelSheet
+        case 'savePNGs' %next WriteExcelSheet or...
             load(fullfile(saveDir,'CleanSegs.mat'));
             load(fullfile(saveDir,'CleanHRcorr.mat'));
-            if glyphs
+            if glyphs %next GlyphDTI
                 load(fullfile(saveDir,'CleanTensor.mat'));
                 load(fullfile(saveDir,'CleanMaps.mat'));
                 load(fullfile(saveDir,'contours.mat'));
             end
+        case 'GlyphDTI' %next WriteExcelSheet
+            load(fullfile(saveDir,'CleanSegs.mat'));
+            load(fullfile(saveDir,'CleanHRcorr.mat'));
         otherwise %start again
             lastFunc = ''; %just redo everything
     end
@@ -277,10 +283,13 @@ if strcmp(lastFunc,'SegmentalAnalysis')
 end
 
 if strcmp(lastFunc,'savePNGs')&&glyphs
-    GlyphDTI(CleanTensor,CleanMaps,contours,lb_labels,hb_labels);
+    figures = GlyphDTI(CleanTensor,CleanMaps,contours,lb_labels,hb_labels);
+    SaveGlyphs(figures,saveDir);
+    lastFunc = 'GlyphDTI';
+    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
 end
 
-if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
+if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'GlyphDTI')
     if (ispc)
         warning('off','MATLAB:MKDIR:DirectoryExists');
         [Excel, Workbook] = StartExcel; %✓
