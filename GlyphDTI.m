@@ -1,7 +1,10 @@
 function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,lowb_labels,highb_labels)
 
+% out:
+% figures - struct containing the glyph figures generated
+% 
 % in:
-% tensor_dicom - struct containting tensors
+% tensor_dicom - struct containing tensors
 % map_dicom - struct containing diffusion maps
 % contours - struct containting contours
 % lowb_labels - restrict output to specific low b-values - {} for no restriction
@@ -10,7 +13,10 @@ function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,lowb_labels,highb_
 % description:
 
 fignum = 1;
+delta = 2; %sj - distance between glyphs
+numpoints = 100; %sj - number of points in glyph (+1)
 figures = struct;
+hf = {};
 cardiacphases = fieldnames(tensor_dicom);
 
 %% loop through different cardiac phases and slice locations
@@ -28,6 +34,8 @@ for i=1:length(cardiacphases)
         M_myo = contours.myoMask{j};
         M_myo = permute(repmat(M_myo,[1 1 3 3]),[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
         
+        P = prctile([contours.epi{j};contours.endo{j}],[0 25 50 75 100],1); %calculate percentiles of epi and endo
+
         mapnames = fieldnames(TMPmap);
 
         %% loop through applicable low and high b-values
@@ -52,7 +60,7 @@ for i=1:length(cardiacphases)
 
                 figure(fignum);
                 ha = axes;
-                plotDTI(ha,D,2,100);
+                plotDTI(ha,D,delta,numpoints);
                 drawnow
 
                 %% cycle through different maps you wish to use to colour the glyphs
@@ -102,11 +110,12 @@ for i=1:length(cardiacphases)
                             axis equal
                             axis off
                         end
-                        colormapDTI(ha,map,cmap,lim,2,100); %add colour to the glyphs based on map
+                        colormapDTI(ha,map,cmap,lim,delta,numpoints); %add colour to the glyphs based on map
                         drawnow;
                         hf{fignum} = figure(fignum);
                         hf{fignum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
                         hf{fignum}.Tag = [cardiacphases{i} '_' slicelocation{j}];
+                        hf{fignum}.UserData = delta*(P-1);
                         fignum = fignum+1;
                         skipcopy = 0;
                     end
@@ -116,4 +125,6 @@ for i=1:length(cardiacphases)
     end
 end
 
-figures.hfig = hf;
+if ~isempty(hf)
+    figures.hfig = hf;
+end
