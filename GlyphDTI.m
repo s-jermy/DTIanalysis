@@ -1,4 +1,4 @@
-function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,lowb_labels,highb_labels)
+function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,lowb_labels,highb_labels)
 
 % out:
 % figures - struct containing the glyph figures generated
@@ -24,6 +24,7 @@ for i=1:length(cardiacphases)
     slicelocation = fieldnames(map_dicom.(cardiacphases{i}));
     for j=1:length(slicelocation)
         skipcopy = 1; %reset each time there is a new slice location/cardiac phase
+        mapnum = 1;
         TMPtensor = tensor_dicom.(cardiacphases{i}).(slicelocation{j});
         TMPmap = map_dicom.(cardiacphases{i}).(slicelocation{j});
         
@@ -33,6 +34,7 @@ for i=1:length(cardiacphases)
         
         M_myo = contours.myoMask{j};
         M_myo = permute(repmat(M_myo,[1 1 3 3]),[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
+        under = trace{j}{1};
         
         P = prctile([contours.epi{j};contours.endo{j}],[0 25 50 75 100],1); %calculate percentiles of epi and endo
 
@@ -101,7 +103,7 @@ for i=1:length(cardiacphases)
                     end
 
                     if ~isempty(map) %don't do anything if there is no map
-                        if fignum>1&&~skipcopy
+                        if ~skipcopy
                             figure(fignum);
                             ax = axes;
                             copyobj(ha.Children,ax); %copy existing figure so as to not overwrite with new colormap
@@ -112,11 +114,12 @@ for i=1:length(cardiacphases)
                         end
                         colormapDTI(ha,map,cmap,lim,delta,numpoints); %add colour to the glyphs based on map
                         drawnow;
-                        hf{fignum} = figure(fignum);
-                        hf{fignum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
-                        hf{fignum}.Tag = [cardiacphases{i} '_' slicelocation{j}];
-                        hf{fignum}.UserData = delta*(P-1);
+                        hf{j}{mapnum} = figure(fignum);
+                        hf{j}{mapnum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
+                        hf{j}{mapnum}.Tag = [cardiacphases{i} '_' slicelocation{j}];
+                        hf{j}{mapnum}.UserData = delta*(P-1);
                         fignum = fignum+1;
+                        mapnum = mapnum+1;
                         skipcopy = 0;
                     end
                 end
