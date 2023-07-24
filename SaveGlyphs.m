@@ -1,25 +1,39 @@
 function SaveGlyphs(figures,saveDir)
 
 hf = figures.hfig;
-% height = 700;
-% width = height*2;
 
-for i=1:length(hf)
-    figure(hf{i});
+for i=1:length(hf) %cardiac phases and slice locations
+    for j=1:length(hf{i}) %glyph maps
+        figure(hf{i}{j}); %bring figure into focus
+
+        f = hf{i}{j}.Tag; %folder name
+        n = hf{i}{j}.Name; %file name
+        ud = hf{i}{j}.UserData; %position information
     
-    f = hf{i}.Tag;
-    n = hf{i}.Name;
-    ud = hf{i}.UserData;
-
-    targetx = round(ud(2,1));
-    targety = round(ud(3,2));
-
-    view(-12,16);
-    campos([-76,-633,202]);
-    camtarget([targetx,targety,0]);
-    camva(2.3);
-
-    saveas(hf{i},fullfile(saveDir,f,n));
+        targetx = round(ud(:,1));
+        targety = round(ud(:,2));
+    
+        op = hf{i}{j}.OuterPosition; %sj - store old figure position and size
+        hf{i}{j}.OuterPosition = [0 0 800 800]; %sj - change to standard size
+    
+        view(-12,16);
+        campos([-76,-633,202]);
+        camva(2.3);
+    
+        fname1 = fullfile(saveDir,f,'glyph');
+        warning('off','MATLAB:MKDIR:DirectoryExists');
+        mkdir(fname1);
+        warning('on','MATLAB:MKDIR:DirectoryExists');
+    
+        for x = 1:length(targetx)
+            camtarget([targetx(x),targety(3),0]);
+            fname = fullfile(fname1,[n '_' int2str(x) '.png']);
+            export_fig(fname, '-png', '-transparent', '-r100'); %sj - save a couple different views
+        end
+    
+        hf{i}{j}.OuterPosition = op; %sj - reset back to original
+        % saveas(hf{i}{j},fullfile(saveDir,f,n)); %sj - save the figure as .fig
+    end
 end
 
 end
