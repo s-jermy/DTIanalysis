@@ -5,6 +5,8 @@ hf = figures.hfig;
 % width = height*2;
 
 for i=1:length(hf)
+    figure(hf{i});
+    
     f = hf{i}.Tag;
     n = hf{i}.Name;
     ud = hf{i}.UserData;
