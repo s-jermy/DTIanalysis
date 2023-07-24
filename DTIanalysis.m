@@ -160,12 +160,17 @@ if ~newfolder
             load(fullfile(saveDir,'CleanAver.mat'));
             load(fullfile(saveDir,'contours.mat'));
             load(fullfile(saveDir,'CleanHRcorr.mat'));
+            if glyphs
+                load(fullfile(saveDir,'CleanTensor.mat'));
+            end
         case 'SegmentalAnalysis' %next savePNGs
             load(fullfile(saveDir,'CleanMaps.mat'));
-            load(fullfile(saveDir,'CleanAver.mat'));
             load(fullfile(saveDir,'contours.mat'));
             load(fullfile(saveDir,'CleanSegs.mat'));
             load(fullfile(saveDir,'CleanHRcorr.mat'));
+            if glyphs
+                load(fullfile(saveDir,'CleanTensor.mat'));
+            end
         case 'savePNGs' %next WriteExcelSheet or...
             load(fullfile(saveDir,'CleanSegs.mat'));
             load(fullfile(saveDir,'CleanHRcorr.mat'));
@@ -263,7 +268,7 @@ if strcmp(lastFunc,'CalculateTensor')
     CleanMaps = DTIMaps(CleanTensor,contours); %✓
     lastFunc = 'DTIMaps';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanMaps.mat'),'CleanMaps');
+    save(fullfile(saveDir,'CleanMaps.mat'),'CleanMaps','Trace');
 end
 
 if strcmp(lastFunc,'DTIMaps')
@@ -283,7 +288,7 @@ if strcmp(lastFunc,'SegmentalAnalysis')
 end
 
 if strcmp(lastFunc,'savePNGs')&&glyphs
-    figures = GlyphDTI(CleanTensor,CleanMaps,contours,lb_labels,hb_labels);
+    figures = GlyphDTI(CleanTensor,CleanMaps,contours,Trace,lb_labels,hb_labels);
     SaveGlyphs(figures,saveDir);
     lastFunc = 'GlyphDTI';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
