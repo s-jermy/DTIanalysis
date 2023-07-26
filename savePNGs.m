@@ -25,7 +25,7 @@ for i=1:length(cardiacphases)
         mkdir(fname1);
 
         M_myo = contours.myoMask{j};
-        under = trace{j}{1};
+        under = trace{j}{2}; %b50 trace image used as base image
     
         mapnames = fieldnames(TMPmap);
         for k=1:length(mapnames)
