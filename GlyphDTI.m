@@ -34,7 +34,7 @@ for i=1:length(cardiacphases)
         
         M_myo = contours.myoMask{j};
         M_myo = permute(repmat(M_myo,[1 1 3 3]),[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
-        under = trace{j}{1};
+        under = trace{j}{2}; %b50 trace image used as base image
         
         P = prctile([contours.epi{j};contours.endo{j}],[0 25 50 75 100],1); %calculate percentiles of epi and endo
 
@@ -61,9 +61,12 @@ for i=1:length(cardiacphases)
                 D = tensor.*M_myo;
 
                 figure(fignum);
-                ha = axes;
-                plotDTI(ha,D,delta,numpoints);
-                drawnow
+                ax1 = axes; %create separate axis for base trace image
+                imagesc(imresize(under,delta));axis equal off;colormap(ax1,'gray'); %scale up trace image to match glyph spacing
+                ax2 = axes; %second axis for DTI glyphs
+                plotDTI(ax2,D,delta,numpoints);drawnow;
+                linkprop([ax1 ax2],{'YDir'}); %base image has reversed Y-direction, copy to glyph axis
+                linkprop([ax2 ax1],{'XLim','YLim'}); %copy glyph axis limits to base image
 
                 %% cycle through different maps you wish to use to colour the glyphs
                 for k=1:length(mapnames)-1
@@ -104,16 +107,15 @@ for i=1:length(cardiacphases)
 
                     if ~isempty(map) %don't do anything if there is no map
                         if ~skipcopy
-                            figure(fignum);
-                            ax = axes;
-                            copyobj(ha.Children,ax); %copy existing figure so as to not overwrite with new colormap
-                            ha = ax;
-
-                            axis equal
-                            axis off
+                            figure(fignum);ax1 = axes;
+                            imagesc(imresize(under,delta));axis equal off;colormap(ax1,'gray');
+                            axtemp = axes;
+                            copyobj(ax2.Children,axtemp);drawnow; %copy existing figure so as to not overwrite with new colormap
+                            axis equal off;ax2 = axtemp;
+                            linkprop([ax1 ax2],{'YDir'});
+                            linkprop([ax2 ax1],{'XLim','YLim'});
                         end
-                        colormapDTI(ha,map,cmap,lim,delta,numpoints); %add colour to the glyphs based on map
-                        drawnow;
+                        colormapDTI(ax2,map,cmap,lim,delta,numpoints);drawnow; %add colour to the glyphs based on map
                         hf{j}{mapnum} = figure(fignum);
                         hf{j}{mapnum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
                         hf{j}{mapnum}.Tag = [cardiacphases{i} '_' slicelocation{j}];
