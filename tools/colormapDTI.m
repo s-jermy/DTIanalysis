@@ -42,7 +42,7 @@ end
 
 % ha=newplot(ha); %sj
 if ~(isempty(cmap)||isempty(lim))
-    colormap(pf_colormap(cmap));
+    colormap(ha,pf_colormap(cmap));
     ha.CLim = lim; %sj
 end
 h = ha.Children; %sj - get the glyph surfaces from the axis
@@ -55,8 +55,8 @@ for ii=1:length(h)
     ymax = max(h(ii).YData(:));
     y = round((ymin+ymax)/2); %find y position
 
-    j = x/delta + 1; %transform back to pixel coordinates
-    i = y/delta + 1;
+    j = x/delta; %transform back to pixel coordinates
+    i = y/delta;
 
     if ~isempty(map)
         cdata = repmat(map(i,j),m+1); %get value from map

@@ -132,8 +132,8 @@ for i=1:ny
                     dX(x,y)=A(1);dY(x,y)=A(2);dZ(x,y)=A(3);
                 end
             end
-            dX=dX+(j-1)*delta; %sj - shift the glyph to the appropriate position
-            dY=dY+(i-1)*delta;
+            dX=dX+j*delta; %sj - shift the glyph to the appropriate position
+            dY=dY+i*delta;
             h = surf(dX,dY,dZ,'parent',ha);
         end
     end
@@ -148,8 +148,8 @@ lighting phong
 % l = light('Position',[0 0 1],'Style','infinite','Color',[ 1.000 0.584 0.000]);
 axis equal
 axis off
-% view([1 -2 20])
-% view([0 90]);
+% view([1 -2 20]);
+% view(2);
 hold off
 
 % fprintf(1,'\nIf you use plotDTI.m please cite the following work:\n');
