@@ -21,6 +21,8 @@ narginchk(0,3)
 % clearvars
 close all
 
+addpath(genpath('tools')); %add tools and subfolders to the search path
+
 %% variable check
 if nargin<1 %default operation
     varargin{1} = 'default'; %saveTag
@@ -51,10 +53,11 @@ end
 %%
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
 
-additionalID = 'affreg_HRcorr_dti'; %sj - tags for changes
-lb_labels = {'b0','b15','b50','b350'}; %labels of low b-values to output - change to {} for all
+additionalID = 'glyph_dti'; %sj - tags for changes
+lb_labels = {'b50','b350'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
+glyphs = false; %sj - show superquad glyphs of tensors
 lastFunc = '';
 
 %% check/create folders
@@ -76,10 +79,16 @@ splitdir = splitdir(~cellfun('isempty',splitdir));
 additionalID = [additionalID '_' splitdir{end}];
 newfolder = false;
 
-dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
+try
+    dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
+catch
+    tmp = strsplit(splitdir{end-1},'_');
+    dcmInfo.PatientID = char(join(tmp(2:end),'_'));
+end
 
 saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
 % warning('off','MATLAB:MKDIR:DirectoryExists');
+
 try
     if ~isfolder(saveDir)
         mkdir(saveDir); %create a new folder for the save directory
@@ -115,57 +124,86 @@ if ~newfolder
         lastFunc = '';
     end
     
-    %{
-    lastFunc = 'RejectImages'; %override
+    %%{
+    lastFunc = 'Registration'; %override
     %}
     
     switch lastFunc
         case 'AnalyseDicoms' %next CategoriseAndConstrain
             %basically just redo everything
         case 'CategoriseAndConstrain' %next RejectImages
-            load(fullfile(saveDir,'Current.mat'));
-            load(fullfile(saveDir,'contours.mat'));
+            load(fullfile(saveDir,'Current.mat'),'Current*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
         case 'RejectImages' %next Registration
-            load(fullfile(saveDir,'Clean.mat'));
-            load(fullfile(saveDir,'contours.mat'));
+            load(fullfile(saveDir,'Clean.mat'),'Clean*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            for l = 1:length(CleanInfo)
+                CleanInfo{l}.contoursDefined = 0;
+                CleanInfo{l}.registrationComplete = 0;
+            end
         case 'Registration' %next DefineROI
-            load(fullfile(saveDir,'CleanReg.mat'));
-            load(fullfile(saveDir,'contours.mat'));
+            load(fullfile(saveDir,'Clean.mat'),'Clean*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            for l = 1:length(CleanInfo)
+                CleanInfo{l}.contoursDefined = 0;
+            end
         case 'DefineROI' %next hrCorrection
-            load(fullfile(saveDir,'CleanROI.mat'));
-            load(fullfile(saveDir,'contours.mat'));
+            load(fullfile(saveDir,'Clean.mat'),'Clean*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
         case 'hrCorrection' %next Average
-            load(fullfile(saveDir,'CleanHRcorr.mat'));
-            load(fullfile(saveDir,'contours.mat'));
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
         case 'Average' %next CalculateTensor
-            load(fullfile(saveDir,'CleanAver.mat'));
-            load(fullfile(saveDir,'CleanHRcorr.mat'));
-            load(fullfile(saveDir,'contours.mat'));
+            load(fullfile(saveDir,'CleanAver.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
         case 'CalculateTensor' %next DTIMaps
-            load(fullfile(saveDir,'CleanTensor.mat'));
-            load(fullfile(saveDir,'CleanAver.mat'));
-            load(fullfile(saveDir,'contours.mat'));
-            load(fullfile(saveDir,'CleanHRcorr.mat'));
+            load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanAver.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
         case 'DTIMaps' %next SegmentalAnalysis
-            load(fullfile(saveDir,'CleanMaps.mat'));
-            load(fullfile(saveDir,'CleanAver.mat'));
-            load(fullfile(saveDir,'contours.mat'));
-            load(fullfile(saveDir,'CleanHRcorr.mat'));
+            load(fullfile(saveDir,'CleanMaps.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanAver.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            if glyphs
+                load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
+            end
         case 'SegmentalAnalysis' %next savePNGs
-            load(fullfile(saveDir,'CleanMaps.mat'));
-            load(fullfile(saveDir,'CleanAver.mat'));
-            load(fullfile(saveDir,'contours.mat'));
-            load(fullfile(saveDir,'CleanSegs.mat'));
-            load(fullfile(saveDir,'CleanHRcorr.mat'));
-        case 'savePNGs' %next WriteExcelSheet
-            load(fullfile(saveDir,'CleanSegs.mat'));
-            load(fullfile(saveDir,'CleanHRcorr.mat'));
+            load(fullfile(saveDir,'CleanSegs.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanMaps.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            if glyphs
+                load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
+            end
+        case 'savePNGs' %next WriteExcelSheet or...
+            load(fullfile(saveDir,'CleanSegs.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            if glyphs %next GlyphDTI
+                load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
+                load(fullfile(saveDir,'CleanMaps.mat'),'Clean*');
+                load(fullfile(saveDir,'contours.mat'),'contours');
+            end
+        case 'GlyphDTI' %next WriteExcelSheet
+            load(fullfile(saveDir,'CleanSegs.mat'),'Clean*');
+            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
+            load(fullfile(saveDir,'Trace.mat'),'Trace');
         otherwise %start again
             lastFunc = ''; %just redo everything
     end
 end
 
-save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','doAffineReg','additionalID','lb_labels','hb_labels');
+save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','doAffineReg','glyphs','additionalID','lb_labels','hb_labels');
 
 %% load images and sort
 if isempty(lastFunc) || strcmp(lastFunc,'AnalyseDicoms')
@@ -205,7 +243,8 @@ if strcmp(lastFunc,'RejectImages')
     [CleanData,CleanInfo,Trace] = Registration(CleanData,CleanInfo,contours,doAffineReg); %✓
     lastFunc = 'Registration';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanReg.mat'),'CleanData','CleanInfo','Trace');
+    save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
+    save(fullfile(saveDir,'Trace.mat'),'Trace');
 end
 
 if strcmp(lastFunc,'Registration')
@@ -213,7 +252,7 @@ if strcmp(lastFunc,'Registration')
 %     [CleanInfo,contours] = ResampleROI(CleanInfo,contours);
     lastFunc = 'DefineROI';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanROI.mat'),'CleanData','CleanInfo','Trace');
+    save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
     save(fullfile(saveDir,'contours.mat'),'contours');
 end
 
@@ -222,7 +261,7 @@ if strcmp(lastFunc,'DefineROI')
     [HRCorrData,HRCorrInfo] = hrAndT1Correction(CleanData,CleanInfo); %✓
     lastFunc = 'hrCorrection';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanHRcorr.mat'),'HRCorrData','HRCorrInfo','Trace');
+    save(fullfile(saveDir,'CleanHRcorr.mat'),'HRCorrData','HRCorrInfo');
 end
 
 %% get average images for each unique gradient direction
@@ -231,7 +270,7 @@ if strcmp(lastFunc,'hrCorrection')
     [CleanAverage,~] = Average(HRCorrData,HRCorrInfo); %✓ - fixed
     lastFunc = 'Average';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanAver.mat'),'CleanAverage','Trace');
+    save(fullfile(saveDir,'CleanAver.mat'),'CleanAverage');
 end
 
 %% begin actual DTI analysis
@@ -265,7 +304,16 @@ if strcmp(lastFunc,'SegmentalAnalysis')
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
 end
 
-if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'SegmentalAnalysis')
+if strcmp(lastFunc,'savePNGs')&&glyphs
+    figures = GlyphDTI(CleanTensor,CleanMaps,contours,Trace,lb_labels,hb_labels);
+    SaveGlyphs(figures,saveDir);
+    lastFunc = 'GlyphDTI';
+    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
+
+    close all; clear figures;
+end
+
+if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'GlyphDTI')
     if (ispc)
         warning('off','MATLAB:MKDIR:DirectoryExists');
         [Excel, Workbook] = StartExcel; %✓
