@@ -99,18 +99,19 @@ colormap('gray');title(gca,'Draw an ROI around the epicardium');axis equal
 epiRoi = drawpolyline('Color',[0 1 0]);customWait(epiRoi);
 epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
 
-epiPos = epiRoi.Position;
-epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
-
 title(gca,'Draw an ROI around the endocardium');
 endoRoi = drawpolyline('Color',[1 0 0]);customWait(endoRoi);
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
+title(gca,'Select the anterior interventricular junction');
+rviRoi = drawpoint('Label','RVI','Color',[0 0 1]);
+
+epiPos = epiRoi.Position;
+epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
+
 endoPos = endoRoi.Position;
 endoPos(end+1,:) = endoPos(1,:); %add first point to end for interpolation
 
-title(gca,'Select the anterior interventricular junction');
-rviRoi = drawpoint('Label','RVI','Color',[0 0 1]);
 rviPos = rviRoi.Position;
 
 epiRoi.Visible = 'off';
@@ -171,19 +172,20 @@ nInterp = size(epi,1);
 epiRoi = drawpolyline('Color',[0 1 0],'Position',epi(1:5:end,:));customWait(epiRoi);
 epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
 
-epiPos = epiRoi.Position;
-epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
-
 title(gca,'Edit endocardium ROI');
 endoRoi = drawpolyline('Color',[1 0 0],'Position',endo(1:5:end,:));customWait(endoRoi);
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
+title(gca,'Edit anterior LV/RV junction (Previous ROIs still editable)');
+rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);customWait(rviRoi);
+rviRoi.Label = 'RVI';rviRoi.LabelAlpha = 0.6;
+
+epiPos = epiRoi.Position;
+epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
+
 endoPos = endoRoi.Position;
 endoPos(end+1,:) = endoPos(1,:); %add first point to end for interpolation
 
-title(gca,'Edit anterior LV/RV junction');
-rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);customWait(rviRoi);
-rviRoi.Label = 'RVI';rviRoi.LabelAlpha = 0.6;
 rviPos = rviRoi.Position;
 
 epiRoi.Visible = 'off';
