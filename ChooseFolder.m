@@ -61,14 +61,13 @@ switch tag
             };
     case 'steve_cubic_64'
         files={...
-            'CUBIC\20210619_1014_STEVE_DTI_002\CS_64dir',...	#1
-            'CUBIC\20210619_1221_STEVE_DTI_006\CS_64dir',...	#2
-            'CUBIC\20210709_1621_STEVE_DTI_009\CS_64dir',...	#3
-            'CUBIC\20210723_1530_STEVE_DTI_010\CS_64dir',...	#4
-            'CUBIC\20210728_1420_STEVE_DTI_011\CS_64dir',...	#5
-            'CUBIC\20210729_1434_STEVE_DTI_012\CS_64dir',...	#6
-            'CUBIC\20211126_1427_STEVE_DTI_013\CS_64dir',...	#7
-            'CUBIC\20220117_1341_STEVE_DTI_014\CS_64dir'...     #8
+            'CUBIC\20210619_1221_STEVE_DTI_006\CS_64dir',...	#1
+            'CUBIC\20210709_1621_STEVE_DTI_009\CS_64dir',...	#2
+            'CUBIC\20210723_1530_STEVE_DTI_010\CS_64dir',...	#3
+            'CUBIC\20210728_1420_STEVE_DTI_011\CS_64dir',...	#4
+            'CUBIC\20210729_1434_STEVE_DTI_012\CS_64dir',...	#5
+            'CUBIC\20211126_1427_STEVE_DTI_013\CS_64dir',...	#6
+            'CUBIC\20220117_1341_STEVE_DTI_014\CS_64dir'...     #7
             };
     case 'steve_cubic_sl'
         files={...
