@@ -57,7 +57,7 @@ additionalID = 'glyph_dti'; %sj - tags for changes
 lb_labels = {'b50','b350'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
-glyphs = true; %sj - show ellipsoid glyphs of tensors
+glyphs = false; %sj - show superquad glyphs of tensors
 lastFunc = '';
 
 %% check/create folders
@@ -125,7 +125,7 @@ if ~newfolder
     end
     
     %%{
-    lastFunc = 'savePNGs'; %override
+    lastFunc = 'Registration'; %override
     %}
     
     switch lastFunc
