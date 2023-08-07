@@ -233,34 +233,26 @@ fixed = slice_dicom(reg_to).image(y_range,x_range);
 
 h = waitbar(0,'Performing simple registration...');
 
-[opt,met] = imregconfig('multimodal');
-opt.MaximumIterations = 300; %increase number of iterations, allowing more time to converge
-opt.InitialRadius = opt.InitialRadius / 10; %reduce initial radius size
-
 for j=1:length(slice_dicom)
     moving = slice_dicom(j).image(y_range,x_range);
+    
+    %% Set registration parameters
+    if j == reg_to
+        regParams = [0 0 0 0];
+    else
+        regParams = dftregistration(fft2(fixed),fft2(moving),100);
+    end
 
     %% crop images and register
     if (isfield(slice_dicom(j),'phaseimage'))
         movingPhase = slice_dicom(j).phaseimage(y_range,x_range);
         movingComplex = moving.*exp(1i*movingPhase);
         
-        if j ~= reg_to
-            tform = imregtform(moving, fixed,"translation",opt, met);
-            tempRegIm = imwarp(movingComplex,tform,"OutputView",imref2d(size(fixed)));
-        else
-            tempRegIm = movingComplex;
-        end
-        
+        tempRegIm = emt_imshift(movingComplex,-regParams(4),-regParams(3));
         slice_dicom(j).regImage = abs(tempRegIm);
         slice_dicom(j).regPhase = angle(tempRegIm);
     else
-        if j == reg_to
-            slice_dicom(j).regImage = fixed;
-        else
-            tform = imregtform(moving, fixed,"rigid",opt, met);
-            slice_dicom(j).regImage = imwarp(moving,tform,"OutputView",imref2d(size(fixed)));
-        end
+        slice_dicom(j).regImage  = emt_imshift(moving,-regParams(4),-regParams(3));
     end
     
     waitbar(j/length(slice_dicom),h);
