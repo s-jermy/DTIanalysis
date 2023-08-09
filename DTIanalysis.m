@@ -45,7 +45,7 @@ switch saveTagCell{1}
         dataDirParent = 'D:\Steve\Documents\DiffusionData';
     otherwise
         % dataDirParent = "D:\Users\liz\Documents\MATLAB\diffusion\data";
-        dataDirParent = "/Users/liz/Documents/Cardiac diffusion/Zak/Dicoms/2.SARC HCM cases";
+        dataDirParent = "D:\Users\liz\Documents\diffusion\Zak\HCM dicoms";
 end
 
 %%
@@ -79,12 +79,7 @@ newfolder = false;
 
 dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
 
-answer = questdlg('Use automatic save directory?');
-if strcmp(answer,'No')
-    saveDir = uigetdir('/Users/liz/Documents/Cardiac diffusion/Zak/DTI QC/ACCEPTABLE CASES copy');
-else
-    saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
-end
+saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
 % warning('off','MATLAB:MKDIR:DirectoryExists');
 try
     if ~isfolder(saveDir)
@@ -122,8 +117,8 @@ if ~newfolder
     end
     
     
-    % lastFunc = 'Registration'; % to reuse contours
-    lastFunc = 'CategoriseAndConstrain';
+%     lastFunc = 'Registration'; % to reuse contours
+    
     
     switch lastFunc
         case 'AnalyseDicoms' %next CategoriseAndConstrain
