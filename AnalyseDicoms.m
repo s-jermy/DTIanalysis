@@ -18,6 +18,17 @@ h = waitbar(0,'Analysing...');
 warnedonce = false;
 
 %% sort images into mag and phase images; and fix nominal interval
+
+tempAT = fieldnames(dicom);
+for i=1:length(tempAT)
+    if length(tempAT{i})<14
+        ATnum = tempAT{i}(3:end);
+        newAT = ['AT0' ATnum];
+        dicom.(newAT) = dicom.(tempAT{i});
+        dicom = rmfield(dicom,tempAT{i});
+    end
+end
+
 AcquisitionTimes = sort(fieldnames(dicom));
 
 for i = 1:length(AcquisitionTimes)
@@ -27,7 +38,7 @@ for i = 1:length(AcquisitionTimes)
     dicom2(i).image = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).image;
     try
         dicom2(i).phaseimage = pi.*(dicom.(AcquisitionTimes{i}).(SeriesNos{2}).image./2048-1);
-%         dicom2(i).compleximage = dicom2(i).image.*exp(1i.*dicom2(i).phaseimage); %do this later
+        % dicom2(i).compleximage = dicom2(i).image.*exp(1i.*dicom2(i).phaseimage); %do this later
     catch ME
         if warnedonce == false
             warning(ME.message);
