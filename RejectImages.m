@@ -29,6 +29,8 @@ for i=1:length(dicom)
     rec{i} = contours.rec{i};
     imrangex = rec{i}(1,1):rec{i}(3,1);
     imrangey = rec{i}(1,2):rec{i}(3,2);
+    imrangex = imrangex(imrangex>0);
+    imrangey = imrangey(imrangey>0);
     
     % extract modal series name
     SDs = arrayfun(@(x) x.SeriesDescription,nfo{i}.Info,'UniformOutput',false);

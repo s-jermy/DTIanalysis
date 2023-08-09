@@ -41,6 +41,8 @@ for i = 1:length(cardiacphases)
         %% Perform the registration on only a small area of the image
         imrangex = rec(1,1):rec(3,1);
         imrangey = rec(1,2):rec(3,2);
+        imrangex = imrangex(imrangex>0);
+        imrangey = imrangey(imrangey>0);
     
         if doAff
             RegData = AffineReg(SliceData,imrangex,imrangey,B_values,regb);
