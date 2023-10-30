@@ -103,8 +103,10 @@ title(gca,'Draw an ROI around the endocardium');
 endoRoi = drawpolyline('Color',[1 0 0]);customWait(endoRoi);
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
-title(gca,'Select the anterior interventricular junction');
+title(gca,'Select the anterior LV/RV junction');
 rviRoi = drawpoint('Label','RVI','Color',[0 0 1]);
+
+uiwait(msgbox("ROIs are still editable. Press OK to complete"));
 
 epiPos = epiRoi.Position;
 epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
@@ -176,9 +178,11 @@ title(gca,'Edit endocardium ROI');
 endoRoi = drawpolyline('Color',[1 0 0],'Position',endo(1:5:end,:));customWait(endoRoi);
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
-title(gca,'Edit anterior LV/RV junction (Previous ROIs still editable)');
+title(gca,'Edit anterior LV/RV junction');
 rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);customWait(rviRoi);
 rviRoi.Label = 'RVI';rviRoi.LabelAlpha = 0.6;
+
+uiwait(msgbox("ROIs are still editable. Press OK to complete"));
 
 epiPos = epiRoi.Position;
 epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
