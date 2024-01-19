@@ -62,12 +62,19 @@ end
 %%
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
 
-additionalID = 'glyph_dti'; %sj - tags for changes
 lb_labels = {'b50','b350'}; %labels of low b-values to output - change to {} for all
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
-doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
-glyphs = false; %sj - show superquad glyphs of tensors
 lastFunc = '';
+
+doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
+glyphs = false; %sj - true=show superquad glyphs of tensors
+additionalID = 'HRcorr_dti'; %sj - tags for changes
+if doAffineReg
+    additionalID = ['affReg_' additionalID];
+end
+if glyphs
+    additionalID = ['glyph_' additionalID];
+end
 
 %% check/create folders
 batchFlag = varargin{2};
