@@ -39,15 +39,24 @@ end
 %% save directory for output files for different projects
 saveTag = varargin{1};
 saveTagCell = regexp(saveTag,'_','split');
-switch saveTagCell{1}
-    case 'steve'
-        dataDirParent = 'C:\Users\User\Documents\DiffusionData';
-    case 'zak'
-        dataDirParent = 'C:\Users\User\Documents\DiffusionData\Zak';
-    case 'test'
-        dataDirParent = 'C:\Users\User\Documents\DiffusionData';
-    otherwise
-        dataDirParent = pwd;
+if ispc
+    switch saveTagCell{1}
+        case 'steve'
+            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
+        case 'zak'
+            dataDirParent = 'C:\Users\User\Documents\DiffusionData\Zak';
+        case 'test'
+            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
+        otherwise
+            dataDirParent = pwd;
+    end
+elseif ismac
+    switch saveTagCell{1}
+        case 'steve'
+            dataDirParent = '/Volumes/mri/UserFolders/jermy/DiffusionData';
+        otherwise
+            dataDirParent = pwd;
+    end
 end
 
 %%
