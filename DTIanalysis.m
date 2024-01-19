@@ -140,13 +140,18 @@ if ~newfolder
         lastFunc = '';
     end
     
-    %%{
-    lastFunc = 'Registration'; %override
+    %{
+    lastFunc = 'AnalyseDicoms'; %override
     %}
     
     switch lastFunc
         case 'AnalyseDicoms' %next CategoriseAndConstrain
-            %basically just redo everything
+            try
+                load(fullfile(saveDir,'Provisional.mat'),'Provisional*');
+            catch
+                lastFunc = '';
+                %basically just redo everything
+            end
         case 'CategoriseAndConstrain' %next RejectImages
             load(fullfile(saveDir,'Current.mat'),'Current*');
             load(fullfile(saveDir,'contours.mat'),'contours');
@@ -221,8 +226,8 @@ end
 
 save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','doAffineReg','glyphs','additionalID','lb_labels','hb_labels');
 
-%% load images and sort
-if isempty(lastFunc) || strcmp(lastFunc,'AnalyseDicoms')
+%% load images
+if isempty(lastFunc)
     InitialDicoms = LoadDicom(dirlisting); %✓
     % lastFunc = 'LoadDicom';
 
@@ -230,8 +235,11 @@ if isempty(lastFunc) || strcmp(lastFunc,'AnalyseDicoms')
     lastFunc = 'AnalyseDicoms';
 
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    % save(fullfile(saveDir,'Provisional.mat'),'ProvisionalDiffusionDicoms','ProvisionalInfo');
+    save(fullfile(saveDir,'Provisional.mat'),'ProvisionalDiffusionDicoms','ProvisionalInfo');
+end
 
+%% sort images by slice and phase
+if strcmp(lastFunc,'AnalyseDicoms')
     [CurrentSlice,CurrentInfo,contours] = CategoriseAndConstrain(ProvisionalDiffusionDicoms,ProvisionalInfo); %✓
     lastFunc = 'CategoriseAndConstrain';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
@@ -241,7 +249,7 @@ end
 
 %% remove low quality images
 if strcmp(lastFunc,'CategoriseAndConstrain')
-    [CurrentInfo,AHASliceLocations,figures] = RejectImages(CurrentSlice,CurrentInfo,contours); %✓
+    [AHASliceLocations,figures] = RejectImages(CurrentSlice,CurrentInfo,contours); %✓
     lastFunc = 'RejectImages';
     SaveFigures(figures,saveDir,'RejectImages');
 
