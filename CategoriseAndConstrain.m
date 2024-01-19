@@ -62,6 +62,18 @@ for i = 1:length(uCp1)
         
         dicom2{ind} = dicom(uCp3==i & uSl3==j);
         nfo2{ind}.Info = nfo.Info(uCp3==i & uSl3==j);
+        % extract modal series name
+        SDs = {nfo2{ind}.Info.SeriesDescription};
+        SDu = unique(SDs);
+        common = find(~all(diff(char(SDu(:)))==0,1),1,'first');
+        if isempty(common)
+            SeriesDescription = SDu{1};
+        else
+            SeriesDescription = SDu{1}(1:common-1);
+        end
+        nfo2{ind}.SeriesDescription = [SeriesDescription num2str(ind)];
+        clear SDu common SDs
+
         nfo2{ind}.contoursDefined = 0;
         nfo2{ind}.registrationComplete = 0;
         nfo2{ind}.PatientID = nfo.PatientID;
