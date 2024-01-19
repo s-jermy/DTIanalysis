@@ -1,11 +1,10 @@
-function [nfo2,AHAslicelocations,figures] = RejectImages(dicom,nfo,contours)
+function [AHAslicelocations,figures] = RejectImages(dicom,nfo,contours)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
 % contours - structure containting contours
 % 
 % out:
-% nfo2 - structure containing info about dicom images
 % AHAslicelocations - slice locations labels for categorisation
 % figures - reject image figures to be saved
 % 
@@ -13,11 +12,11 @@ function [nfo2,AHAslicelocations,figures] = RejectImages(dicom,nfo,contours)
 % select images with poor image quality to remove from the rest of the 
 % analysis
 
-nfo2 = nfo;
 TMPnfo = {};
 figures = struct;
 slicelocations = cellfun(@(x) x.SliceLocation,nfo,'UniformOutput',false);
 cardiacphases = cellfun(@(x) x.CardiacPhase,nfo,'UniformOutput',false);
+SeriesDescription = cellfun(@(x) x.SeriesDescription,nfo,'UniformOutput',false);
 
 returnZeros = @(errstr,x) [0; 0; 0];
 doNothing = @(src,~,i,j) [];
@@ -29,17 +28,6 @@ for i=1:length(dicom)
     rec{i} = contours.rec{i};
     imrangex = rec{i}(1,1):rec{i}(3,1);
     imrangey = rec{i}(1,2):rec{i}(3,2);
-    
-    % extract modal series name
-    SDs = arrayfun(@(x) x.SeriesDescription,nfo{i}.Info,'UniformOutput',false);
-    [SDu,SD1,~] = unique(SDs);
-    for j=1:length(SD1)
-        SDl(j) = sum(strcmp(SDs,SDu{j}));
-    end
-    [~,modal] = max(SDl);
-    SeriesDescription{i} = SDu{modal};
-    nfo2{i}.SeriesDescription = SeriesDescription{i};
-    clear SDu SD1 SDl SDs
     
     %% Fill figure array with DW images
     h = waitbar(0,'Filling figure arrays...');
