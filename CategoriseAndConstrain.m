@@ -55,6 +55,8 @@ clear uSl uCp
 
 ind = 0;
 
+[dur,dur_corr] = calcDuration(nfo);
+
 %% Categorise
 for i = 1:length(uCp1)
     for j = 1:length(uSl1)
@@ -82,6 +84,8 @@ for i = 1:length(uCp1)
         nfo2{ind}.TE = nfo.TE;
         nfo2{ind}.MagneticFieldStrength = nfo.MagneticFieldStrength;
         nfo2{ind}.PixelSpacing = nfo.PixelSpacing;
+        nfo2{ind}.TotalDuration = dur; % NOTE:not per slice (whole acquisition)
+        nfo2{ind}.TotalDuration_corr = dur_corr; % duration without outlying gaps
     
         %new logic for multiple b-values
         [~,uBV1,~] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
