@@ -21,17 +21,17 @@ err = 0;
 switch tag
     case 'steve_cmo'
         files={...
-            % fullfile('CMO','20220816_1404_STEVE_CMO_001','BH'),...	
-            fullfile('CMO','20230310_1035_STEVE_CMO_006','BH'),...	#1	
-            fullfile('CMO','20230310_1035_STEVE_CMO_006','CS'),...	#2
-            fullfile('CMO','20230217_1404_STEVE_CMO_005','BH'),...	#3
-            fullfile('CMO','20230217_1404_STEVE_CMO_005','CS'),...	#4
-            fullfile('CMO','20220816_1404_STEVE_CMO_002','BH'),...	#5
-            fullfile('CMO','20220816_1404_STEVE_CMO_002','CS'),...	#6
-            fullfile('CMO','20230203_1405_STEVE_CMO_004','BH'),...	#7
-            fullfile('CMO','20230203_1405_STEVE_CMO_004','CS'),...	#8
-            fullfile('CMO','20230310_1440_STEVE_CMO_007','BH'),...	#9
-            fullfile('CMO','20230310_1440_STEVE_CMO_007','CS')...	#10
+            % fullfile('CMO','20220816_1404_STEVE_CMO_001','BH'),...	TN
+            fullfile('CMO','20230310_1035_STEVE_CMO_006','BH'),...	#1 - KO
+            fullfile('CMO','20230310_1035_STEVE_CMO_006','CS'),...	#2 - KO
+            fullfile('CMO','20230217_1404_STEVE_CMO_005','BH'),...	#3 - NV
+            fullfile('CMO','20230217_1404_STEVE_CMO_005','CS'),...	#4 - NV
+            fullfile('CMO','20220816_1404_STEVE_CMO_002','BH'),...	#5 - MH
+            fullfile('CMO','20220816_1404_STEVE_CMO_002','CS'),...	#6 - MH
+            fullfile('CMO','20230203_1405_STEVE_CMO_004','BH'),...	#7 - RS
+            fullfile('CMO','20230203_1405_STEVE_CMO_004','CS'),...	#8 - RS
+            fullfile('CMO','20230310_1440_STEVE_CMO_007','BH'),...	#9 - FO
+            fullfile('CMO','20230310_1440_STEVE_CMO_007','CS')...	#10 - FO
             };
     case 'steve_cubic'
         files={...
