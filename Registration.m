@@ -30,10 +30,13 @@ for i = 1:length(cardiacphases)
 
         rec = contours.rec{j};
         B_values = arrayfun(@(x) x.B_value,SliceInfo);
-        [uBVal,~,uBV2] = unique(B_values);
-        regb = uBV2(uBVal==50);
-        if isempty(regb)
-            regb = 1; %default to b0/b15
+        [uBVal,uBV1,uBV2] = unique(B_values);
+        idx = uBVal==50;
+        if ~any(idx)
+            idx = uBVal==0|uBVal==15;
+            if ~any(idx)
+                idx = 1;
+            end
         end
     
         warning('off','all');
@@ -43,14 +46,15 @@ for i = 1:length(cardiacphases)
         imrangey = rec(1,2):rec(3,2);
     
         if doAff
-            RegData = AffineReg(SliceData,imrangex,imrangey,B_values,regb);
+            regTo = find(idx);
+            RegData = AffineReg(SliceData,imrangex,imrangey,B_values,regTo(1));
         else
-%             regTo = find(cat(1,SliceData(:).contoursDefined)); %haven't defined any contours so...
-            regTo = 1; %just use first non-excluded image, although you may not always want to register to a b0 image?
+            regTo = uBV1(idx);
+            % regTo = find(cat(1,SliceData(:).contoursDefined)); %haven't defined any contours so...
             if isfield(nfo{j},'RegisterInMatlab')
                 regTo = nfo{j}.RegisterInMatlab; %I haven't actually done anything with this field, could be used to override the above if there is a specific image you wish to use
             end
-            RegData = SimpleReg(SliceData,imrangex,imrangey,regTo);
+            RegData = SimpleReg(SliceData,imrangex,imrangey,regTo(1));
         end
     
         for k=1:length(uBVal)
@@ -133,16 +137,16 @@ imAver = mean(cat(3,slice_dicom(regInd).regImage),3); %average the images to try
 
 %% Register other b-values
 %%get rid of the b value we have already registered
-uBVal(reg_b) = [];
+% uBVal(reg_b) = [];
 uBV1(reg_b) = [];
 
 complete = j; %just for waitbar
 
 %% Find image with the highest average signal intensity
-for k = 1:numel(uBV1)
-    waitbar(complete/numel(slice_dicom),h,sprintf('Performing registration on b%d...',uBVal(k)));
+for k = uBV1'
+    waitbar(complete/numel(slice_dicom),h,sprintf('Performing registration on b%d...',uBVal(uBV2(k))));
     
-    regInd = find(uBV2 == uBV2(uBV1(k)))';
+    regInd = find(uBV2 == uBV2(k))';
     fixed = 0;
     for j = regInd
         if mean(fixed,'all')<mean(slice_dicom(j).image(y_range,x_range),'all')
@@ -181,7 +185,7 @@ for k = 1:numel(uBV1)
 
     % Finally use the intermediate and average transforms to get the final transform for each image
     complete = complete+j/2; %just for waitbar
-    waitbar(complete/numel(slice_dicom),h,sprintf('Performing final registration on b%d...',uBVal(k)));
+    waitbar(complete/numel(slice_dicom),h,sprintf('Performing final registration on b%d...',uBVal(uBV2(k))));
     
     for j = 1:numel(regInd)
         moving = slice_dicom(regInd(j)).image(y_range,x_range);

@@ -88,24 +88,30 @@ for i = 1:length(uCp1)
         nfo2{ind}.TotalDuration_corr = dur_corr; % duration without outlying gaps
     
         %new logic for multiple b-values
-        [~,uBV1,~] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
-        fixedImage = uBV1(2); % find first b50 image, change to 1 for b0, 3 for b350, etc
-%         fixedImage = uBV1(1); % for b0
+        [uBVal,uBV1,~] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
+        idx = uBVal==50;
+        if ~any(idx)
+            idx = uBVal==0|uBVal==15;
+            if ~any(idx)
+                idx = 1;
+            end
+        end
+        fixedImage = uBV1(idx); % find first b50 image
     
         if (length(dicom2{i})>=7)
-            if (nfo2{ind}.Info(fixedImage).TriggerTime >= 500)
+            if (nfo2{ind}.Info(fixedImage(1)).TriggerTime >= 500)
                 nfo2{ind}.CardiacPhase = 'Diastole';
             else
                 nfo2{ind}.CardiacPhase = 'Systole';
             end
-            nfo2{ind}.SliceLocation = nfo2{ind}.Info(fixedImage).SliceLocation;
+            nfo2{ind}.SliceLocation = nfo2{ind}.Info(fixedImage(1)).SliceLocation;
 
             %% Constrain
             % Draw ROI, or load previously drawn ROI
-            ima = single(dicom2{ind}(fixedImage).image);
+            ima = single(dicom2{ind}(fixedImage(1)).image);
             try
-                WC = nfo2{ind}.Info(fixedImage).WindowCenter;
-                WW = nfo2{ind}.Info(fixedImage).WindowWidth;
+                WC = nfo2{ind}.Info(fixedImage(1)).WindowCenter;
+                WW = nfo2{ind}.Info(fixedImage(1)).WindowWidth;
                 low = WC-.5 - (WW-1)/2; high = WC-.5 + (WW-1)/2; % for mag image
                 ima(ima<=low) = 0; ima(ima>high) = 255;
                 ima = ((ima-(WC-.5))/(WW-1)+.5)*255;
