@@ -117,8 +117,6 @@ for j = 1:numel(regInd)
 
     tforminit = imregtform(moving,fixed,'similarity',opt,met); %start with a rigid transformation to get us close
     trans{regInd(j)} = imregtform(moving,fixed,'affine',opt,met,'InitialTransformation',tforminit); %then use that as an initial transform, allowing a good affine transform to be found more easily
-    
-    slice_dicom(regInd(j)).transform = trans{regInd(j)};
 
     if (isfield(slice_dicom(regInd(j)),'phaseimage'))
         movingPhase = slice_dicom(regInd(j)).phaseimage(y_range,x_range);
@@ -191,7 +189,6 @@ for k = uBV1'
         moving = slice_dicom(regInd(j)).image(y_range,x_range);
 
         trans{regInd(j)} = affine2d(tform{j}.T * tformaver.T); %the final transform is found by multiplying the intermediate and the average transforms
-        slice_dicom(regInd(j)).transform = trans{regInd(j)};
         
         if (isfield(slice_dicom(regInd(j)),'phaseimage'))
             movingPhase = slice_dicom(regInd(j)).phaseimage(y_range,x_range);
@@ -212,6 +209,7 @@ for k = uBV1'
 end
 close(h)
 
+[slice_dicom.transform] = deal(trans{:});
 reg_dicom = slice_dicom;
 
 end
