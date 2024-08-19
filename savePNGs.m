@@ -57,7 +57,11 @@ for i=1:length(cardiacphases)
                             ax2 = axes;
 
                             ForFig = ForFig*1e3;
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 2.5]); %sj
+                            if median(ForFig(M_myo))>2.5
+                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 5]); %sj
+                            else
+                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 2.5]); %sj
+                            end
                             colormap(ax2,pf_colormap('MD'));
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'FA' %fractional anisotropy
@@ -72,7 +76,11 @@ for i=1:length(cardiacphases)
                             ax2 = axes;
 
                             ForFig = ForFig*1e3;
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 3.5]); %sj
+                            if median(ForFig(M_myo))>3.5
+                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 5]); %sj
+                            else
+                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 3.5]); %sj
+                            end
                             colormap(ax2,pf_colormap('tensor_mode'));
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'RD' %radial diffusivity
@@ -80,7 +88,11 @@ for i=1:length(cardiacphases)
                             ax2 = axes;
 
                             ForFig = ForFig*1e3;
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 2]); %sj
+                            if median(ForFig(M_myo))>2
+                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 5]); %sj
+                            else
+                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 2]); %sj
+                            end
                             colormap(ax2,pf_colormap('tensor_mode'));
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'HA' %helix angle
