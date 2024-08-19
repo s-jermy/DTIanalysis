@@ -21,6 +21,15 @@ for i=1:length(cardiacphases)
         SliceData = dicom.(cardiacphases{i}).(slicelocation{j}).SliceData;
         SliceInfo = nfo{j}.SliceInfo;
 
+        MagneticFieldStrength = nfo{j}.MagneticFieldStrength;
+        if MagneticFieldStrength == 1.5
+            T1Corr = 1030; 
+        elseif MagneticFieldStrength > 1.5
+            T1Corr = 1471; % 1471ms T1 of myocardium at 3T https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.20605
+        else
+            T1Corr = [];
+        end
+
         bVal = arrayfun(@(x) x.B_value,SliceInfo);
         for k=1:length(bVal)
             SliceInfo(k).B_value_uncorr = bVal(k);
@@ -47,9 +56,9 @@ for i=1:length(cardiacphases)
         if nfo{j}.TE > 30
             NominalIntervals = arrayfun(@(x) x.NominalInterval,SliceInfo);
             regImage = cat(3,SliceData(:).regImage);
-            if (min(NominalIntervals)>0)
+            if min(NominalIntervals)>0 && ~isempty(T1Corr)
                 warning('applying T1 correction to registered images');
-                corrfact = 1./(1-exp(-NominalIntervals./1471)); % 1471ms T1 of myocardium https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.20605
+                corrfact = 1./(1-exp(-NominalIntervals./T1Corr)); 
                 corrfact = permute(corrfact,[3 1 2]);
                 regImage = regImage.*repmat(corrfact,size(regImage,1),size(regImage,2));
 
