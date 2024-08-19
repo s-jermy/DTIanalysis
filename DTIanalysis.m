@@ -1,22 +1,25 @@
 %% New DTI script
 function DTIanalysis(varargin)
-% DTIANALYSIS({saveTag} {batchFlag} {batchInd})
+% DTIANALYSIS({saveTag} {batchFlag} {batchInd} {glyphs} {affine})
 %     in:
 %     saveTag - name of folder (or project) where data will be saved
 %     batchFlag - flag to set if StartScript will be running multiple cases
 %     at once
 %     batchInd - batch index to start from, useful if execution fails
 %     halfway though a batch
+%     glyphs - true/false show superquad glyphs of tensors
+%     affine - true/false do affine registration
 %     
 %     description:
-%     Main script for running DTIanalysis. If no inputs are given, it is
-%     equivalent to running DTIanalysis('default',0).
+%     Code for running DTIanalysis. If no inputs are given, it is
+%     equivalent to running DTIanalysis('default',0). The 'main.m' script
+%     is used to call DTIanalysis function for a specific case.
 % 
 %     REQUIRED TOOLBOXES:
 %     Curve Fitting toolbox
 %     Image Processing toolbox
 
-narginchk(0,3)
+narginchk(0,5)
 
 % clearvars
 close all
@@ -34,6 +37,14 @@ end
 
 if nargin<3 && varargin{2}
     varargin{3} = 1; %batchInd
+end
+
+if nargin<4
+    varargin{4} = 0; %glyphs
+end
+
+if nargin<5
+    varargin{5} = 1; %doAffineReg
 end
 
 %% save directory for output files for different projects
@@ -64,14 +75,16 @@ lb_labels = {'b50','b350'}; %labels of low b-values to output - change to {} for
 hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 lastFunc = '';
 
-doAffineReg = true; %sj - true=perform affine registration / false=perform simple registration
-glyphs = false; %sj - true=show superquad glyphs of tensors
-additionalID = 'HRcorr_dti'; %sj - tags for changes
-if doAffineReg
-    additionalID = ['affReg_' additionalID];
-end
+doAffineReg = varargin{5}; %sj - true=perform affine registration / false=perform simple registration
+glyphs = varargin{4};
+
+
 if glyphs
-    additionalID = ['glyph_' additionalID];
+    additionalID = 'glyph_dti';
+elseif doAffineReg
+    additionalID = 'affReg_HRcorr_dti';
+else
+    additionalID = 'HRcorr_dti'; %sj - tags for changes
 end
 
 %% check/create folders
