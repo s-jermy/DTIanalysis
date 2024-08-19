@@ -6,7 +6,7 @@ function tensor_dicom = CalculateTensor(averaged_dicom)
 % tensor_dicom - struct containing tensors,eigenvectors,eigenvalues
 % 
 % description:
-% calculate ans solve diffusion tensors
+% calculate and solve diffusion tensors
 
 tensor_dicom = [];
 
