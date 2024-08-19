@@ -1,24 +1,7 @@
-for i = 1:23
-    DTIanalysis('steve_cubic',1,i);
-end
-for i = 1:7
-    DTIanalysis('steve_cubic_64',1,i);
-end
-for i = 1:8
-    DTIanalysis('steve_cubic_sl',1,i);
-end
-for i = 1:12
-    DTIanalysis('steve_oxford_2018',1,i);
-end
-for i = 1:8
-    DTIanalysis('steve_oxford_2020',1,i);
-end
-for i = 1:20
-    DTIanalysis('steve_oxford_2021',1,i);
-end
-for i = 1:10
-    DTIanalysis('steve_cmo',1,i);
-end
+% for i = start:finish
+%     DTIanalysis({'saveTag'},{batchFlag},{batchInd},{glyphs},{affine})
+% end
+
 for i = 1:11
-    DTIanalysis('zak',1,i);
+    DTIanalysis('zak',1,i,0,1);
 end

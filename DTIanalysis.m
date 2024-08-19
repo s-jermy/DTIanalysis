@@ -41,19 +41,17 @@ saveTag = varargin{1};
 saveTagCell = regexp(saveTag,'_','split');
 if ispc
     switch saveTagCell{1}
-        case 'steve'
-            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
+        % case 'saveTag'
+        %     dataDirParent = 'C:\your\workspace\folder';
         case 'zak'
             dataDirParent = 'C:\Users\User\Documents\DiffusionData\Zak';
-        case 'test'
-            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
         otherwise
             dataDirParent = pwd;
     end
 elseif ismac
     switch saveTagCell{1}
-        case 'steve'
-            dataDirParent = '/Volumes/mri/UserFolders/jermy/DiffusionData';
+        % case 'saveTag'
+        %     dataDirParent = '/your/workspace/folder/';
         otherwise
             dataDirParent = pwd;
     end
