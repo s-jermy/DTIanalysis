@@ -1,4 +1,4 @@
-function [dur,dur_corr] = calcDuration(nfo)
+function [dur,dur_corr,gap] = calcDuration(nfo)
 
 slices = length(nfo);
 
@@ -13,19 +13,25 @@ dur = acq(end) - acq(1);
 % disp('Uncorrected:')
 % disp(dur);
 
-[~,ia,~] = unique(sn);
+[Csn,ia,~] = unique(sn);
 diff = acq(2:end)-acq(1:end-1);
-gap = diff(ia(2:end)-1);
-gaps = seconds(gap);
+acq_gap = diff(ia(2:end)-1);
+acq_gaps = seconds(acq_gap);
 diff(ia(2:end)-1) = []; %remove gaps
 
-o = isoutlier(gaps,'gesd'); %find outliers in the gaps between scans
-if ~any(o)
-    o = isoutlier(gaps);
+sn_diff = Csn(2:end)-Csn(1:end-1);
+if any(sn_diff>3)
+    acq_gap = acq_gap./floor(sn_diff/3);
 end
-gap(o) = mean(gap(~o));
 
-dur_corr = sum(diff) + sum(gap);
+o = isoutlier(acq_gaps,'gesd'); %find outliers in the gaps between scans
+if ~any(o)
+    o = isoutlier(acq_gaps);
+end
+acq_gap(o) = mean(acq_gap(~o));
+
+gap = sum(acq_gap);
+dur_corr = sum(diff) + gap;
 
 % diff = duration(0,0,0,0,"Format","dd:hh:mm:ss.SSSS");
 % maxacq = diff;
