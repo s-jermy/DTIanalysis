@@ -1,4 +1,4 @@
-function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,lowb_labels,highb_labels)
+function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,varargin)
 
 % out:
 % figures - struct containing the glyph figures generated
@@ -7,10 +7,21 @@ function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,lowb_labels,
 % tensor_dicom - struct containing tensors
 % map_dicom - struct containing diffusion maps
 % contours - struct containting contours
+% varargin:
 % lowb_labels - restrict output to specific low b-values - {} for no restriction
 % highb_labels - restrict output to specific high b-values  - {} for no restriction
 % 
 % description:
+
+narginchk(4,6);
+lowb_labels = {};
+highb_labels = {};
+if nargin>4
+    lowb_labels = varargin{1};
+end
+if nargin>5
+    highb_labels = varargin{2};
+end
 
 fignum = 1;
 delta = 2; %sj - distance between glyphs

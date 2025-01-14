@@ -12,13 +12,13 @@ function savePNGs(map_dicom,trace,contours,saveDir,varargin)
 % 
 % description:
 % save DTI maps
-
+narginchk(4,8);
 lowb_labels = {};
 highb_labels = {};
 tog_cmap = 1;
 tog_alpha = 1;
-if nargin==5
-    error('This function does not accept exactly one argument. Use no variable arguments or more than one.');
+if nargin>4
+    lowb_labels = varargin{1};
 end
 if nargin>5
     lowb_labels = varargin{1};

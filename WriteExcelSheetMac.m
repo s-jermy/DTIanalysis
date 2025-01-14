@@ -1,4 +1,14 @@
-function WriteExcelSheetMac(SegmentedData,~,saveDir,PatID,lowb_labels,highb_labels)
+function WriteExcelSheetMac(SegmentedData,~,saveDir,PatID,varargin)
+
+narginchk(4,6);
+lowb_labels = {};
+highb_labels = {};
+if nargin>5
+    lowb_labels = varargin{1};
+end
+if nargin>6
+    highb_labels = varargin{2};
+end
 
 cardiacphases = fieldnames(SegmentedData);
 

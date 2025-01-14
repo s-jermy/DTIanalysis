@@ -1,4 +1,14 @@
-function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir,lowb_labels,highb_labels)
+function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir,varargin)
+
+narginchk(5,7);
+lowb_labels = {};
+highb_labels = {};
+if nargin>5
+    lowb_labels = varargin{1};
+end
+if nargin>6
+    highb_labels = varargin{2};
+end
 
 % Get a handle to Sheets and select Sheet 1
 Sheets = Workbook.Sheets;
