@@ -8,3 +8,4 @@ superellipsoid_demo/
 *.dcm
 *.fig
 *.txt
+.DS_Store
