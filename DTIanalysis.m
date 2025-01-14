@@ -54,8 +54,14 @@ if ispc
     switch saveTagCell{1}
         % case 'saveTag'
         %     dataDirParent = 'C:\your\workspace\folder';
+        case 'steve'
+            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
         case 'zak'
             dataDirParent = 'C:\Users\User\Documents\DiffusionData\Zak';
+        case 'test'
+            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
+        case 'steam'
+            dataDirParent = 'C:\Users\User\Documents\DiffusionData';
         otherwise
             dataDirParent = pwd;
     end
@@ -63,6 +69,8 @@ elseif ismac
     switch saveTagCell{1}
         % case 'saveTag'
         %     dataDirParent = '/your/workspace/folder/';
+        case 'steve'
+            dataDirParent = '/Volumes/mri/UserFolders/jermy/DiffusionData';
         otherwise
             dataDirParent = pwd;
     end
