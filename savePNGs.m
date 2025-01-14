@@ -1,16 +1,41 @@
-function savePNGs(map_dicom,trace,contours,saveDir,lowb_labels,highb_labels)
+function savePNGs(map_dicom,trace,contours,saveDir,varargin)
 % in:
 % map_dicom - struct containing diffusion maps
 % trace - struct containing average image for each b-value
 % contours - struct containting contours
 % saveDir - save directory for current subject
+% varargin:
 % lowb_labels - restrict output to specific low b-values - {} for no restriction
 % highb_labels - restrict output to specific high b-values  - {} for no restriction
+% tog_cmap - toggle pf colour map
+% tog_alpha - toggle alpha map
 % 
 % description:
 % save DTI maps
 
+lowb_labels = {};
+highb_labels = {};
+tog_cmap = 1;
+tog_alpha = 1;
+if nargin==5
+    error('This function does not accept exactly one argument. Use no variable arguments or more than one.');
+end
+if nargin>5
+    lowb_labels = varargin{1};
+    highb_labels = varargin{2};
+end
+if nargin>6
+    tog_cmap = varargin{3};
+end
+if nargin>7
+    tog_alpha = varargin{4};
+end
+
 cardiacphases = fieldnames(map_dicom);
+if ~tog_cmap
+    cmap = "turbo";
+    %cmap = other_colormap("inferno");
+end
 
 for i=1:length(cardiacphases)
     slicelocation = fieldnames(map_dicom.(cardiacphases{i}));
@@ -26,7 +51,11 @@ for i=1:length(cardiacphases)
         mkdir(fname1);
         warning('on','MATLAB:MKDIR:DirectoryExists');
 
-        M_myo = contours.myoMask{j};
+        if tog_alpha
+            M_myo = contours.myoMask{j};
+        else
+            M_myo = ones(size(contours.myoMask{j}));
+        end
         under = trace{j}{2}; %b50 trace image used as base image
     
         mapnames = fieldnames(TMPmap);
@@ -62,15 +91,52 @@ for i=1:length(cardiacphases)
                             else
                                 imagesc(ax2,ForFig,'alphadata',M_myo,[0 2.5]); %sj
                             end
-                            colormap(ax2,pf_colormap('MD'));
+                            if tog_cmap
+                                cmap = other_colormap('pf_MD');
+                            end
+                            colormap(ax2,cmap);
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'FA' %fractional anisotropy
                             title([lowb{lb} '-' highb{hb} ' FA']);
                             ax2 = axes;
 
                             imagesc(ax2,ForFig,'alphadata',M_myo,[0 1]); %sj
-                            colormap(ax2,pf_colormap('FA'));
+                            if tog_cmap
+                                cmap = other_colormap('pf_FA');
+                            end
+                            colormap(ax2,cmap);
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
+                        
+                        case 'HA' %helix angle
+                            title([lowb{lb} '-' highb{hb} ' Helix angle (°)']);
+                            ax2 = axes;
+
+                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
+                            if tog_cmap
+                                cmap = other_colormap('helix_angle');
+                            end
+                            colormap(ax2,cmap);
+                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
+                        case 'HA_filt' %filtered helix angle
+                            title([lowb{lb} '-' highb{hb} ' Filtered Helix angle (°)']);
+                            ax2 = axes;
+
+                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
+                            if tog_cmap
+                                cmap = other_colormap('helix_angle');
+                            end
+                            colormap(ax2,cmap);
+                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
+                        case 'E2A' %absolute secondary eigenvector angle
+                            title([lowb{lb} '-' highb{hb} ' Absolute E2 angle (°)']);
+                            ax2 = axes;
+
+                            ForFig = abs(ForFig);
+                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 90]); %sj
+                            cmap = other_colormap('pf_abs_E2A');
+                            colormap(ax2,cmap);
+                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
+                        
                         case 'AD' %axial diffusivity
                             title([lowb{lb} '-' highb{hb} ' ' sprintf(['AD (' '\x03bc' 'm^2/ms)'])]);
                             ax2 = axes;
@@ -81,7 +147,10 @@ for i=1:length(cardiacphases)
                             else
                                 imagesc(ax2,ForFig,'alphadata',M_myo,[0 3.5]); %sj
                             end
-                            colormap(ax2,pf_colormap('tensor_mode'));
+                            if tog_cmap
+                                cmap = other_colormap('pf_tensor_mode');
+                            end
+                            colormap(ax2,cmap);
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'RD' %radial diffusivity
                             title([lowb{lb} '-' highb{hb} ' ' sprintf(['RD (' '\x03bc' 'm^2/ms)'])]);
@@ -93,43 +162,30 @@ for i=1:length(cardiacphases)
                             else
                                 imagesc(ax2,ForFig,'alphadata',M_myo,[0 2]); %sj
                             end
-                            colormap(ax2,pf_colormap('tensor_mode'));
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        case 'HA' %helix angle
-                            title([lowb{lb} '-' highb{hb} ' Helix angle (°)']);
-                            ax2 = axes;
-
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
-                            colormap(ax2,pf_colormap('helix_angle'));
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        case 'HA_filt' %filtered helix angle
-                            title([lowb{lb} '-' highb{hb} ' Filtered Helix angle (°)']);
-                            ax2 = axes;
-
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
-                            colormap(ax2,pf_colormap('helix_angle'));
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        case 'E2A' %absolute secondary eigenvector angle
-                            title([lowb{lb} '-' highb{hb} ' Absolute E2 angle (°)']);
-                            ax2 = axes;
-
-                            ForFig = abs(ForFig);
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 90]); %sj
-                            colormap(ax2,pf_colormap('abs_E2A'));
+                            if tog_cmap
+                                cmap = other_colormap('pf_tensor_mode');
+                            end
+                            colormap(ax2,cmap);
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'TRA' %transverse angle
                             title([lowb{lb} '-' highb{hb} ' Transverse angle (°)']);
                             ax2 = axes;
                             
                             imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
-                            colormap(ax2,pf_colormap('E1_TA'));
+                            if tog_cmap
+                                cmap = other_colormap('pf_E1_TA');
+                            end
+                            colormap(ax2,cmap);
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'SA' %sheet angle
                             title([lowb{lb} '-' highb{hb} ' Sheet angle (°)']);
                             ax2 = axes;
                             
                             imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
-                            colormap(ax2,pf_colormap('E1_TA'));
+                            if tog_cmap
+                                cmap = other_colormap('pf_E2A');
+                            end
+                            colormap(ax2,cmap);
                             ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         otherwise
                             fname = '';
