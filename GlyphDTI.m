@@ -13,14 +13,28 @@ function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,varargin)
 % 
 % description:
 
-narginchk(4,6);
 lowb_labels = {};
 highb_labels = {};
-if nargin>4
-    lowb_labels = varargin{1};
+tog_cmap = 1;
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
 end
-if nargin>5
-    highb_labels = varargin{2};
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'LowB'
+            lowb_labels = value;
+        case 'HighB'
+            highb_labels = value;
+        case 'ColourMap'
+            tog_cmap = value;
+        otherwise
+            error('Unknown parameter: %s', key);
+    end
 end
 
 fignum = 1;
@@ -29,6 +43,11 @@ numpoints = 100; %sj - number of points in glyph (+1)
 figures = struct;
 hf = {};
 cardiacphases = fieldnames(tensor_dicom);
+
+if ~tog_cmap
+    cmap = "turbo";
+    %cmap = other_colormap("inferno");
+end
 
 %% loop through different cardiac phases and slice locations
 for i=1:length(cardiacphases)
@@ -84,31 +103,49 @@ for i=1:length(cardiacphases)
                     map = TMPmap.(mapnames{k}).(lowb{lb}).(highb{hb});
                     switch mapnames{k}
                         % case 'MD' %mean diffusivity
-                        %     cmap = 'MD';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_MD');
+                        %     end
                         %     lim = [0 2.5e-3];
                         % case 'FA' %fractional anisotropy
-                        %     cmap = 'FA';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_FA');
+                        %     end
                         %     lim = [0 1];
                         % case 'AD' %axial diffusivity
-                        %     cmap = 'tensor_mode';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_tensor_mode');
+                        %     end
                         %     lim = [0 3.5];
                         % case 'RD' %radial diffusivity
-                        %     cmap = 'tensor_mode';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_tensor_mode');
+                        %     end
                         %     lim = [0 2];
                         % case 'HA' %helix angle
-                        %     cmap = 'helix_angle';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_helix_angle');
+                        %     end
                         %     lim = [-90 90];
                         case 'HA_filt' %filtered helix angle
-                            cmap = 'helix_angle';
+                            if tog_cmap
+                                cmap = other_colormap('pf_helix_angle');
+                            end
                             lim = [-90 90];
                         case 'E2A' %absolute secondary eigenvector angle
-                            cmap = 'abs_E2A';
+                            if tog_cmap
+                                cmap = other_colormap('pf_abs_E2A');
+                            end
                             lim = [0 90];
                         % case 'TRA' %transverse angle
-                        %     cmap = 'E1_TA';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_E1_TA');
+                        %     end
                         %     lim = [-90 90];
                         % case 'SA' %sheet angle
-                        %     cmap = 'E1_TA';
+                        %     if tog_cmap
+                        %         cmap = other_colormap('pf_E1_TA');
+                        %     end
                         %     lim = [-90 90];
                         otherwise
                             map = [];

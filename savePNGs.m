@@ -12,23 +12,35 @@ function savePNGs(map_dicom,trace,contours,saveDir,varargin)
 % 
 % description:
 % save DTI maps
-narginchk(4,8);
+
 lowb_labels = {};
 highb_labels = {};
 tog_cmap = 1;
 tog_alpha = 1;
-if nargin>4
-    lowb_labels = varargin{1};
+tog_allmaps = 1;
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
 end
-if nargin>5
-    lowb_labels = varargin{1};
-    highb_labels = varargin{2};
-end
-if nargin>6
-    tog_cmap = varargin{3};
-end
-if nargin>7
-    tog_alpha = varargin{4};
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'LowB'
+            lowb_labels = value;
+        case 'HighB'
+            highb_labels = value;
+        case 'CustomColourmap'
+            tog_cmap = value;
+        case 'MapMask'
+            tog_alpha = value;
+        case 'PrintAllMaps'
+            tog_allmaps = value;
+        otherwise
+            error('Unknown parameter: %s', key);
+    end
 end
 
 cardiacphases = fieldnames(map_dicom);
