@@ -94,118 +94,95 @@ for i=1:length(cardiacphases)
                     fname = fullfile(fname1,[mapnames{k} '_' lowb{lb} '_' highb{hb} '.png']);
                     switch mapnames{k}
                         case 'MD' %mean diffusivity
-                            title([lowb{lb} '-' highb{hb} ' ' sprintf(['MD (' '\x03bc' 'm^2/ms)'])]);
-                            ax2 = axes;
-
+                            label = ['MD (' '\x03bc' 'm^2/ms)'];
                             ForFig = ForFig*1e3;
                             if median(ForFig(M_myo))>2.5
-                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 5]); %sj
+                                clims = [0 5];
                             else
-                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 2.5]); %sj
+                                clims = [0 2.5];
                             end
                             if tog_cmap
                                 cmap = other_colormap('pf_MD');
                             end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'FA' %fractional anisotropy
-                            title([lowb{lb} '-' highb{hb} ' FA']);
-                            ax2 = axes;
-
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 1]); %sj
+                            label = 'FA';
+                            clims = [0 1];
                             if tog_cmap
                                 cmap = other_colormap('pf_FA');
                             end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         
                         case 'HA' %helix angle
-                            title([lowb{lb} '-' highb{hb} ' Helix angle (°)']);
-                            ax2 = axes;
-
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
+                            label = 'Helix angle (°)';
+                            clims = [-90 90];
                             if tog_cmap
-                                cmap = other_colormap('helix_angle');
+                                cmap = other_colormap('pf_helix_angle');
                             end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'HA_filt' %filtered helix angle
-                            title([lowb{lb} '-' highb{hb} ' Filtered Helix angle (°)']);
-                            ax2 = axes;
-
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
+                            label = 'Filtered Helix angle (°)';
+                            clims = [-90 90];
                             if tog_cmap
-                                cmap = other_colormap('helix_angle');
+                                cmap = other_colormap('pf_helix_angle');
                             end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         case 'E2A' %absolute secondary eigenvector angle
-                            title([lowb{lb} '-' highb{hb} ' Absolute E2 angle (°)']);
-                            ax2 = axes;
-
+                            label = 'Absolute E2 angle (°)';
                             ForFig = abs(ForFig);
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[0 90]); %sj
+                            clims = [0 90];
                             cmap = other_colormap('pf_abs_E2A');
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        
-                        case 'AD' %axial diffusivity
-                            title([lowb{lb} '-' highb{hb} ' ' sprintf(['AD (' '\x03bc' 'm^2/ms)'])]);
-                            ax2 = axes;
-
-                            ForFig = ForFig*1e3;
-                            if median(ForFig(M_myo))>3.5
-                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 5]); %sj
-                            else
-                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 3.5]); %sj
-                            end
-                            if tog_cmap
-                                cmap = other_colormap('pf_tensor_mode');
-                            end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        case 'RD' %radial diffusivity
-                            title([lowb{lb} '-' highb{hb} ' ' sprintf(['RD (' '\x03bc' 'm^2/ms)'])]);
-                            ax2 = axes;
-
-                            ForFig = ForFig*1e3;
-                            if median(ForFig(M_myo))>2
-                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 5]); %sj
-                            else
-                                imagesc(ax2,ForFig,'alphadata',M_myo,[0 2]); %sj
-                            end
-                            if tog_cmap
-                                cmap = other_colormap('pf_tensor_mode');
-                            end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        case 'TRA' %transverse angle
-                            title([lowb{lb} '-' highb{hb} ' Transverse angle (°)']);
-                            ax2 = axes;
-                            
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
-                            if tog_cmap
-                                cmap = other_colormap('pf_E1_TA');
-                            end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-                        case 'SA' %sheet angle
-                            title([lowb{lb} '-' highb{hb} ' Sheet angle (°)']);
-                            ax2 = axes;
-                            
-                            imagesc(ax2,ForFig,'alphadata',M_myo,[-90 90]); %sj
-                            if tog_cmap
-                                cmap = other_colormap('pf_E2A');
-                            end
-                            colormap(ax2,cmap);
-                            ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
                         otherwise
                             fname = '';
                     end
 
-                    axis equal;colorbar;
+                    if tog_allmaps
+                        fname = fullfile(fname1,[mapnames{k} '_' lowb{lb} '_' highb{hb} '.png']);
+                        switch mapnames{k}
+                            case 'AD' %axial diffusivity
+                                label = ['AD (' '\x03bc' 'm^2/ms)'];
+                                ForFig = ForFig*1e3;
+                                if median(ForFig(M_myo))>3.5
+                                    clims = [0 5]; %sj
+                                else
+                                    clims = [0 3.5]; %sj
+                                end
+                                if tog_cmap
+                                    cmap = other_colormap('pf_tensor_mode');
+                                end
+                            case 'RD' %radial diffusivity
+                                label = ['RD (' '\x03bc' 'm^2/ms)'];
+                                ForFig = ForFig*1e3;
+                                if median(ForFig(M_myo))>2
+                                    clims = [0 5]; %sj
+                                else
+                                    clims = [0 2]; %sj
+                                end
+                                if tog_cmap
+                                    cmap = other_colormap('pf_tensor_mode');
+                                end
+                            case 'TRA' %transverse angle
+                                label = 'Transverse angle (°)';
+                                clims = [-90 90]; %sj
+                                if tog_cmap
+                                    cmap = other_colormap('pf_E1_TA');
+                                end
+                            case 'SA' %sheet angle
+                                label = 'Sheet angle (°)';
+                                clims = [-90 90]; %sj
+                                if tog_cmap
+                                    cmap = other_colormap('pf_E2A');
+                                end
+                            otherwise
+                                fname = '';
+                        end
+                    end
 
                     if ~isempty(fname)
+                        title([lowb{lb} '-' highb{hb} ' ' sprintf(label)]);
+                        ax2 = axes;
+                        imagesc(ax2,ForFig,'alphadata',M_myo,clims); %sj
+                        colormap(ax2,cmap);
+                        ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
+    
+                        axis equal;colorbar;
+
                         export_fig(fname,'-png','-transparent','-r100');
                     end
                     close(hf);
