@@ -1,16 +1,26 @@
-function WriteExcelSheetMac(SegmentedData,~,saveDir,PatID,varargin)
+function WriteExcelSheetMac(SegmentedData,~,saveDir,AddID,varargin)
 
 narginchk(4,6);
 lowb_labels = {};
 highb_labels = {};
-if nargin>5
+if nargin>4
     lowb_labels = varargin{1};
 end
-if nargin>6
+if nargin>5
     highb_labels = varargin{2};
 end
 
 cardiacphases = fieldnames(SegmentedData);
+
+sz = [0 22];
+varTypes = {'string','string','string','string', ...
+    'double','double','double','double','double','double','double','double','double','double', ...
+    'double','double','double','double','double','double','double','double'};
+varNames = {'Phase','Slice','lowB','highB', ...
+    'MD','MDstd','FA','FAstd','AD','ADstd','RD','RDstd','HAd','HAdstd', ...
+    'HAg','HAgstd','absE2A','absE2Astd','TRA','TRAstd','SA','SAstd'};
+T_summ = table('Size',sz,'VariableTypes',varTypes,'VariableNames',varNames);
+writetable(T_summ,fullfile(saveDir,[AddID '.xlsx']),'Sheet','Summary'); % write initial empty table that will updated at the end
 
 for i=1:length(cardiacphases)
     SegPhase = SegmentedData.(cardiacphases{i});
@@ -37,6 +47,12 @@ for i=1:length(cardiacphases)
                     end
                 end
 
+                varNames = {'MD','MDstd','FA','FAstd','AD','ADstd','RD','RDstd','HAd','HAdstd','HAg','HAgstd','absE2A','absE2Astd','TRA','TRAstd','SA','SAstd'};
+                rowNames = {'A','AS','IS','I','IL','AL','mean'};
+                if strcmp(slicelocation{j},'Apex')
+                    rowNames = {'A','S','I','L','mean'};
+                end
+
                 meanADC = SegSlice.means.MD.(lowb{lb}).(highb{hb})';
                 stdADC = SegSlice.stds.MD.(lowb{lb}).(highb{hb})';
                 meanFA = SegSlice.means.FA.(lowb{lb}).(highb{hb})';
@@ -51,15 +67,28 @@ for i=1:length(cardiacphases)
                 stdHAd = SegSlice.stds.HAd.(lowb{lb}).(highb{hb})';
                 meanHAg = SegSlice.means.HAg.(lowb{lb}).(highb{hb})';
                 stdHAg = SegSlice.stds.HAg.(lowb{lb}).(highb{hb})';
+                meanAD = SegSlice.means.AD.(lowb{lb}).(highb{hb})';
+                stdAD = SegSlice.stds.AD.(lowb{lb}).(highb{hb})';
+                meanRD = SegSlice.means.RD.(lowb{lb}).(highb{hb})';
+                stdRD = SegSlice.stds.RD.(lowb{lb}).(highb{hb})';
                
-                T = table(meanADC,stdADC,meanFA,stdFA,meanSA,stdSA,meanabsE2A,stdabsE2A,...
-                    meanTA,stdTA,meanHAd,stdHAd,meanHAg,stdHAg);
-                writetable(T,fullfile(saveDir,[PatID '.xlsx']),'Sheet',[lowb{lb} '_' highb{hb} '_' slicelocation{j} '_' cardiacphases{i}(1:3)]);
+                T = table(meanADC,stdADC,meanFA,stdFA,meanAD,stdAD,meanRD,stdRD,meanHAd,stdHAd, ...
+                    meanHAg,stdHAg,meanabsE2A,stdabsE2A,meanTA,stdTA,meanSA,stdSA, ...
+                    'VariableNames',varNames,'RowNames',rowNames);
+
+                writetable(T,fullfile(saveDir,[AddID '.xlsx']),'Sheet',[lowb{lb} '_' highb{hb} '_' slicelocation{j} '_' cardiacphases{i}(1:3)],'WriteRowNames',true);
+
+                T_summ = [T_summ; table(cardiacphases(i),slicelocation(j),lowb(lb),highb(hb), ...
+                    meanADC(end),stdADC(end),meanFA(end),stdFA(end),meanAD(end),stdAD(end),meanRD(end),stdRD(end),meanHAd(end),stdHAd(end), ...
+                    meanHAg(end),stdHAg(end),meanabsE2A(end),stdabsE2A(end),meanTA(end),stdTA(end),meanSA(end),stdSA(end), ...
+                    'VariableNames', T_summ.Properties.VariableNames)];
 
             end
         end
     end
 end
+
+writetable(T_summ,fullfile(saveDir,[AddID '.xlsx']),'Sheet','Summary');
 
 
 
