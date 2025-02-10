@@ -53,6 +53,10 @@ clear uSl uCp
 [uCp1,~,uCp3] = unique(CardiacPhases);
 [uSl1,~,uSl3] = unique(SliceLocations);
 
+if length(uCp1)>1
+    'here'
+end
+
 ind = 0;
 
 [dur,dur_corr,gap] = calcDuration(nfo);
@@ -64,7 +68,7 @@ for i = 1:length(uCp1)
         
         dicom2{ind} = dicom(uCp3==i & uSl3==j);
         nfo2{ind}.Info = nfo.Info(uCp3==i & uSl3==j);
-        % extract modal series name
+        % extract series name
         SDs = {nfo2{ind}.Info.SeriesDescription};
         SDu = unique(SDs);
         common = find(~all(diff(char(SDu(:)))==0,1),1,'first');
@@ -106,6 +110,7 @@ for i = 1:length(uCp1)
                 nfo2{ind}.CardiacPhase = 'Systole';
             end
             nfo2{ind}.SliceLocation = nfo2{ind}.Info(fixedImage(1)).SliceLocation;
+            nfo2{ind}.FilesToUse = ones(size(nfo2{ind}.Info)); %at first assume all files will be used, this will be updated after RejectImages
 
             %% Constrain
             % Draw ROI, or load previously drawn ROI

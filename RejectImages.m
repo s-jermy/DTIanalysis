@@ -28,6 +28,12 @@ for i=1:length(dicom)
     rec{i} = contours.rec{i};
     imrangex = rec{i}(1,1):rec{i}(3,1);
     imrangey = rec{i}(1,2):rec{i}(3,2);
+
+    try
+        FilesToUse = nfo{i}.FilesToUse;
+    catch
+        FilesToUse = ones(size(nfo{i}.Info));
+    end
     
     %% Fill figure array with DW images
     h = waitbar(0,'Filling figure arrays...');
@@ -35,6 +41,7 @@ for i=1:length(dicom)
         bVind = arrayfun(@(z) max(z.B_value==ubVals(bV)),nfo{i}.Info);
         dicom2{i}{bV} = dicom{i}(bVind);
         TMPnfo{i}{bV} = nfo{i}.Info(bVind);
+        TMPfilestouse = FilesToUse(bVind);
         
         % now sort the images by diffusion direction and b-value
         diffDirsCell{i}{bV} = arrayfun(@(x) x.DiffDirVec,TMPnfo{i}{bV},'UniformOutput',false,'ErrorHandler',returnZeros);
@@ -80,7 +87,7 @@ for i=1:length(dicom)
         % if there aren't many directions
         ha = tight_subplot(max(ImsPerDir{i}{bV})+1,max(max(uDD2),7),0.01,0.01,0.01);
         trackpos = zeros(1,max(max(uDD2),7));
-        for j = 1:length(diffDirsCell{i}{bV})
+        for j = 1:length(dicom2{i}{bV})
             trackpos(uDD2(j)) = trackpos(uDD2(j))+1;
             subplotindex = uDD2(j)+(trackpos(uDD2(j))-1)*(max(max(uDD2),7));
             ah{i}{bV}{subplotindex} = subplot(ha(subplotindex)); % diffusion dirs columns x no of images per dirn rows; numbered by row, i.e. 1 2 3;4 5 6...
@@ -131,6 +138,10 @@ for i=1:length(dicom)
 %                 im{i}{bV}{j}.Parent.YColor = 'b';
 %             end
             im{i}{bV}{j}.Tag = TMPnfo{i}{bV}(j).SOPInstanceUID;
+
+            if ~TMPfilestouse(j)
+                ChangeSelectionStatus(im{i}{bV}{j},[],i,j)
+            end
         end
         
         %% Add labels to images
@@ -165,8 +176,8 @@ for i=1:length(dicom)
         
         waitbar(bV/length(ubVals),h);
     end
-bVsum = bVsum+i*(sum(1:bV)*20);
-close(h);
+    bVsum = bVsum+i*(sum(1:bV)*20);
+    close(h);
 end
 f = msgbox('Finishing up...');
 

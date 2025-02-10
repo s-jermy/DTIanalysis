@@ -1,4 +1,4 @@
-function [dicom2,nfo2] = CleanStruct(dicom,nfo,figures,slice_loc)
+function [dicom2,nfo2,dicom,nfo] = CleanStruct(dicom,nfo,figures,slice_loc)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
@@ -8,6 +8,8 @@ function [dicom2,nfo2] = CleanStruct(dicom,nfo,figures,slice_loc)
 % out:
 % dicom2 - clean structure containing diffusion images
 % nfo2 - clean structure containing info about dicom images
+% dicom - original structure containing diffusion images (not used)
+% nfo - updated original structure containing info about dicom images
 % 
 % description:
 % separate the images we want to keep from the ones we don't
@@ -27,7 +29,9 @@ for i=1:length(dicom)
     dicom2.(nfo2{i}.CardiacPhase).(slice_loc{i}).AllData = dicom{i};
     dicom2.(nfo2{i}.CardiacPhase).(slice_loc{i}).SliceData = dicom{i}(FilesToUse);
     nfo2{i}.SliceInfo = nfo{i}.Info(FilesToUse);
+    % update FilesToUse in both Current and CleanInfo
     nfo2{i}.FilesToUse = FilesToUse;
+    nfo{i}.FilesToUse = FilesToUse;
 end
 
 end

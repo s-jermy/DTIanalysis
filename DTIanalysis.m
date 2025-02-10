@@ -270,13 +270,15 @@ end
 if strcmp(lastFunc,'CategoriseAndConstrain')
     [AHASliceLocations,figures] = RejectImages(CurrentSlice,CurrentInfo,contours); %✓
     lastFunc = 'RejectImages';
-    SaveFigures(figures,saveDir,'RejectImages');
 
     %% create clean structures
-    [CleanData,CleanInfo] = CleanStruct(CurrentSlice,CurrentInfo,figures,AHASliceLocations); %✓
+    [CleanData,CleanInfo,~,CurrentInfo] = CleanStruct(CurrentSlice,CurrentInfo,figures,AHASliceLocations); %✓
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(saveDir,'Current.mat'),'CurrentSlice','CurrentInfo');
     save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
     % save(fullfile(saveDir,'contours.mat'),'contours');
+
+    SaveFigures(figures,saveDir,'RejectImages');
 
     close all; clear figures;
 end
