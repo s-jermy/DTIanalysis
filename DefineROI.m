@@ -42,6 +42,17 @@ for i = 1:length(trace)
     %     epi = FlipCWtoACW(contours2.epi{i});
     %     endo = FlipCWtoACW(contours2.endo{i});
     end
+
+    hold on;
+    plot(epi(:,1),epi(:,2),'g.-','LineWidth',2.25)
+    plot(endo(:,1),endo(:,2),'r.-','LineWidth',2.25)
+    plot(rvi(:,1),rvi(:,2),'bx','LineWidth',2.25)
+    hold off;
+    
+    pause(1);
+    
+    close;
+
     P_Endo{i} = endo;
     P_Epi{i} = epi;
     P_RVI{i} = rvi;
@@ -96,17 +107,27 @@ ax = imagesc(IM,[min(IM(:)) max(IM(:))]); % here just view the image you want to
 % ax.Parent.YDir = 'normal';
 colormap('gray');title(gca,'Draw an ROI around the epicardium');axis equal
 
-epiRoi = drawpolyline('Color',[0 1 0]);customWait(epiRoi);
+hold on
+
+epiRoi = drawpolyline('Color',[0 1 0]);
+epiRoi.InteractionsAllowed = 'all';
+fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,epiRoi));
+epiRoi.Label = 'Enter key to finish'; epiRoi.LabelAlpha = 0.5; uiwait;
 epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
 
 title(gca,'Draw an ROI around the endocardium');
-endoRoi = drawpolyline('Color',[1 0 0]);customWait(endoRoi);
+endoRoi = drawpolyline('Color',[1 0 0]);
+endoRoi.InteractionsAllowed = 'all';
+fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,endoRoi));
+endoRoi.Label = 'Enter key to finish'; endoRoi.LabelAlpha = 0.5; uiwait;
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
 title(gca,'Select the anterior LV/RV junction');
 rviRoi = drawpoint('Label','RVI','Color',[0 0 1]);
 
-uiwait(msgbox("ROIs are still editable. Press OK to complete"));
+hold off
+
+% uiwait(msgbox("ROIs are still editable. Press OK to complete"));
 
 epiPos = epiRoi.Position;
 epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
@@ -122,32 +143,7 @@ rviRoi.Visible = 'off';
 
 title(gca,'');
 
-epiInterp = linspace(1,size(epiPos,1),nInterp+1); %interpolate one extra point so it can be removed later
-epiInterp = epiInterp(1:end-1); %remove last point, it is the same as the first
-tmp_epi(:,1) = interp1(epiPos(:,1),epiInterp,'makima');
-tmp_epi(:,2) = interp1(epiPos(:,2),epiInterp,'makima');
-epi2 = interparc(nInterp,tmp_epi(:,1),tmp_epi(:,2),'pchip'); %gives equally spaced points around ROI
-
-endoInterp = linspace(1,size(endoPos,1),nInterp+1); %interpolate one extra point so it can be removed later
-endoInterp = endoInterp(1:end-1); %remove last point, same as first
-tmp_endo(:,1) = interp1(endoPos(:,1),endoInterp,'makima');
-tmp_endo(:,2) = interp1(endoPos(:,2),endoInterp,'makima');
-endo2 = interparc(nInterp,tmp_endo(:,1),tmp_endo(:,2),'pchip'); %gives equally spaced points around ROI
-
-rvi = rviPos;
-
-epi = FlipCWtoACW(epi2); %sj - ensure ROIs are anticlockwise, needed for dti calc
-endo = FlipCWtoACW(endo2);
-
-hold on;
-plot(epi(:,1),epi(:,2),'g.-','LineWidth',2.25)
-plot(endo(:,1),endo(:,2),'r.-','LineWidth',2.25)
-plot(rvi(:,1),rvi(:,2),'bx','LineWidth',2.25)
-hold off;
-
-pause(1);
-
-close;
+[epi,endo,rvi] = Interp(epiPos,endoPos,rviPos,nInterp);
 
 end
 
@@ -168,21 +164,33 @@ ax = imagesc(IM,[min(IM(:)) max(IM(:))]); % here just view the image you want to
 % ax.YData = fliplr(ax.YData);
 % ax.Parent.YDir = 'normal';
 colormap('gray');title(gca,'Edit epicardium ROI');axis equal
+hold on
 
 nInterp = size(epi,1);
 
-epiRoi = drawpolyline('Color',[0 1 0],'Position',epi(1:5:end,:));customWait(epiRoi);
+epiRoi = drawpolyline('Color',[0 1 0],'Position',epi(1:5:end,:));
+epiRoi.InteractionsAllowed = 'all';
+fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,epiRoi));
+epiRoi.Label = 'Enter key to finish'; epiRoi.LabelAlpha = 0.5; uiwait;
 epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
 
 title(gca,'Edit endocardium ROI');
-endoRoi = drawpolyline('Color',[1 0 0],'Position',endo(1:5:end,:));customWait(endoRoi);
+endoRoi = drawpolyline('Color',[1 0 0],'Position',endo(1:5:end,:));
+endoRoi.InteractionsAllowed = 'all';
+fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,endoRoi));
+endoRoi.Label = 'Enter key to finish'; endoRoi.LabelAlpha = 0.5; uiwait;
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
 title(gca,'Edit anterior LV/RV junction');
-rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);customWait(rviRoi);
+rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);
+rviRoi.InteractionsAllowed = 'all';
+fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,rviRoi));
+rviRoi.Label = 'Enter key to finish'; rviRoi.LabelAlpha = 0.5; uiwait;
 rviRoi.Label = 'RVI';rviRoi.LabelAlpha = 0.6;
 
-uiwait(msgbox("ROIs are still editable. Press OK to complete"));
+hold off
+
+% uiwait(msgbox("ROIs are still editable. Press OK to complete"));
 
 epiPos = epiRoi.Position;
 epiPos(end+1,:) = epiPos(1,:); %add first point to end for interpolation
@@ -198,32 +206,28 @@ rviRoi.Visible = 'off';
 
 title(gca,'');
 
-epiInterp = linspace(1,size(epiPos,1),nInterp+1); %interpolate one extra point so it can be removed later
+[epi,endo,rvi] = Interp(epiPos,endoPos,rviPos,nInterp);
+
+end
+
+function [epi,endo,rvi] = Interp(epi_p,endo_p,rvi_p,n)
+
+epiInterp = linspace(1,size(epi_p,1),n+1); %interpolate one extra point so it can be removed later
 epiInterp = epiInterp(1:end-1); %remove last point, it is the same as the first
-tmp_epi(:,1) = interp1(epiPos(:,1),epiInterp,'makima');
-tmp_epi(:,2) = interp1(epiPos(:,2),epiInterp,'makima');
-epi2 = interparc(nInterp,tmp_epi(:,1),tmp_epi(:,2),'pchip'); %gives equally spaced points around ROI
+tmp_epi(:,1) = interp1(epi_p(:,1),epiInterp,'makima');
+tmp_epi(:,2) = interp1(epi_p(:,2),epiInterp,'makima');
+epi2 = interparc(n,tmp_epi(:,1),tmp_epi(:,2),'pchip'); %gives equally spaced points around ROI
 
-endoInterp = linspace(1,size(endoPos,1),nInterp+1); %interpolate one extra point so it can be removed later
+endoInterp = linspace(1,size(endo_p,1),n+1); %interpolate one extra point so it can be removed later
 endoInterp = endoInterp(1:end-1); %remove last point, same as first
-tmp_endo(:,1) = interp1(endoPos(:,1),endoInterp,'makima');
-tmp_endo(:,2) = interp1(endoPos(:,2),endoInterp,'makima');
-endo2 = interparc(nInterp,tmp_endo(:,1),tmp_endo(:,2),'pchip'); %gives equally spaced points around ROI
+tmp_endo(:,1) = interp1(endo_p(:,1),endoInterp,'makima');
+tmp_endo(:,2) = interp1(endo_p(:,2),endoInterp,'makima');
+endo2 = interparc(n,tmp_endo(:,1),tmp_endo(:,2),'pchip'); %gives equally spaced points around ROI
 
-rvi = rviPos;
+rvi = rvi_p;
 
 epi = FlipCWtoACW(epi2); %sj - ensure ROIs are anticlockwise, needed for dti calc
 endo = FlipCWtoACW(endo2);
-
-hold on;
-plot(epi(:,1),epi(:,2),'g.-','LineWidth',2.25)
-plot(endo(:,1),endo(:,2),'r.-','LineWidth',2.25)
-plot(rvi(:,1),rvi(:,2),'bx','LineWidth',2.25)
-hold off;
-
-pause(1);
-
-close;
 
 end
 
@@ -254,10 +258,12 @@ py = angle(Y(idx_y));
 phase_lag = py - px;
 
 %wrap phase
-if phase_lag>pi
-    phase_lag = phase_lag-2*pi;
-elseif phase_lag<=-pi
-    phase_lag = phase_lag+2*pi;
+while phase_lag>pi || phase_lag<=-pi
+    if phase_lag>pi
+        phase_lag = phase_lag-2*pi;
+    elseif phase_lag<=-pi
+        phase_lag = phase_lag+2*pi;
+    end
 end
 
 if phase_lag<0 %does x lag behind y? - change CW to ACW by reversing order
