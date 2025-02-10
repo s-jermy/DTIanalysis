@@ -276,7 +276,11 @@ if isbitmap(options)
         % Set the background colour (and size) back to normal
         set(fig, 'Color', tcol, 'Position', pos);
         % Compute the alpha map
-        alpha = round(sum(B - A, 3)) / (255 * 3) + 1;
+        try
+            alpha = round(sum(B - A, 3)) / (255 * 3) + 1;
+        catch
+            disp('here');
+        end
         A = alpha;
         A(A==0) = 1;
         A = B ./ A(:,:,[1 1 1]);
