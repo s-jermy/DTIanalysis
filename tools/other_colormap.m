@@ -6,7 +6,7 @@ if nargin>1
 end
 if strcmp(map(1:3),'pf_')
     map = map(4:end);
-    clr_folder = 'tools\cardiac_DTI_colormaps-master\colormaps_data';
+    clr_folder = fullfile('tools','cardiac_DTI_colormaps-master','colormaps_data');
     clr_name = [map '.txt'];
     try
         CM = load(fullfile(clr_folder,clr_name));
@@ -15,10 +15,10 @@ if strcmp(map(1:3),'pf_')
         CM = parula(m);
     end
 else
-    try exist(map, 'file') == 2 || exist(map, 'builtin') == 5
+    if exist(map, 'file') == 2 || exist(map, 'builtin') == 5
         % Call the function with additional arguments
         CM = feval(map, varargin{:});
-    catch
+    else
         warning('The colormap function "%s" does not exist.', map);
         CM = parula(m);
     end
