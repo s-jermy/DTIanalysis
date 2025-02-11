@@ -1,16 +1,25 @@
 function WriteExcelSheetMac(SegmentedData,~,saveDir,AddID,varargin)
 
-narginchk(4,6);
 lowb_labels = {};
 highb_labels = {};
-if nargin>4
-    lowb_labels = varargin{1};
-end
-if nargin>5
-    highb_labels = varargin{2};
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
 end
 
-cardiacphases = fieldnames(SegmentedData);
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'LowB'
+            lowb_labels = value;
+        case 'HighB'
+            highb_labels = value;
+        otherwise
+            error('Unknown parameter: %s', key);
+    end
+end
 
 sz = [0 22];
 varTypes = {'string','string','string','string', ...

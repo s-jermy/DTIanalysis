@@ -7,8 +7,15 @@ function DTIanalysis(varargin)
 %     at once
 %     batchInd - batch index to start from, useful if execution fails
 %     halfway though a batch
-%     glyphs - true/false show superquad glyphs of tensors
-%     affine - true/false do affine registration
+%     glyphs - true/{false} show superquad glyphs of tensors
+%     affine - {true}=perform affine registration / false=perform simple
+%     registration
+%     lowbLabels - labels of low b-values to output
+%     highbLabels - labels of high b-values to output
+%     customMaps - true=use custom colourmaps from cardiac_DTI_colormaps
+%     git / {false}=use default matlab colours🥱
+%     useMapMask - {true}/false use roi mask when printing maps
+%     allMaps - true=print all dti maps / {false}=print md fa ha e2a
 %     
 %     description:
 %     Code for running DTIanalysis. If no inputs are given, it is
@@ -19,41 +26,63 @@ function DTIanalysis(varargin)
 %     Curve Fitting toolbox
 %     Image Processing toolbox
 
-narginchk(0,5)
+%% instance variables
+saveTag = 'default';
+batchFlag = false;
+batchInd = 1;
+glyphs = false;
+affine = true;
+lowbLabels = {};
+highbLabels = {};
+customMaps = false;
+useMapMask = true;
+allMaps = false;
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
+end
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'SaveTag'
+            saveTag = value;
+        case 'RunBatch'
+            batchFlag = value;
+        case 'BatchIndex'
+            batchInd = value;
+        case 'TensorGlyphs'
+            glyphs = value;
+        case 'AffineReg'
+            affine = value;
+        case 'LowB'
+            lowbLabels = value;
+        case 'HighB'
+            highbLabels = value;
+        case 'CustomColourmap'
+            customMaps = value;
+        case 'MapMask'
+            useMapMask = value;
+        case 'PrintAllMaps'
+            allMaps = value;
+        otherwise
+            warning('Unknown parameter: %s', key);
+    end
+end
 
 % clearvars
 close all
 
 addpath(genpath('tools')); %add tools and subfolders to the search path
 
-%% variable check
-if nargin<1 %default operation
-    varargin{1} = 'default'; %saveTag
-end
-
-if nargin<2
-    varargin{2} = 0; %batchFlag
-end
-
-if nargin<3 && varargin{2}
-    varargin{3} = 1; %batchInd
-end
-
-if nargin<4
-    varargin{4} = 0; %glyphs
-end
-
-if nargin<5
-    varargin{5} = 1; %doAffineReg
-end
-
 %% save directory for output files for different projects
-saveTag = varargin{1};
 saveTagCell = regexp(saveTag,'_','split');
 if ispc
     switch saveTagCell{1}
         % case 'saveTag'
-        %     dataDirParent = 'C:\your\workspace\folder';
+        %     dataDirParent = 'C:\your\workspace\folder'; %change as needed
         case 'steve'
             dataDirParent = 'C:\Users\User\Documents\DiffusionData';
         case 'zak'
@@ -68,7 +97,7 @@ if ispc
 elseif ismac
     switch saveTagCell{1}
         % case 'saveTag'
-        %     dataDirParent = '/your/workspace/folder/';
+        %     dataDirParent = '/your/workspace/folder/'; %change as needed
         case 'steve'
             dataDirParent = '/Volumes/mri/UserFolders/jermy/DiffusionData';
         otherwise
@@ -78,29 +107,28 @@ end
 
 %%
 dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom attributes
-
-lb_labels = {'b50','b350'}; %labels of low b-values to output - change to {} for all
-hb_labels = {'b350','b450','b550','b650'}; %labels of high b-values to output - change to {} for all
 lastFunc = '';
-
-doAffineReg = varargin{5}; %sj - true=perform affine registration / false=perform simple registration
-glyphs = varargin{4};
-
 
 if glyphs
     additionalID = 'glyph_dti';
-elseif doAffineReg
+elseif affine
     additionalID = 'affReg_HRcorr_dti';
 else
     additionalID = 'HRcorr_dti'; %sj - tags for changes
 end
 
+if ~isempty(lowbLabels)
+    lowbValues = cellfun(@(s) str2double(strjoin(regexp(s,'\d','match'),'')),lowbLabels);
+    lowbFixed = min(lowbValues(:));
+else
+    lowbFixed = 50;
+end
+
 %% check/create folders
-batchFlag = varargin{2};
 dataDir = '';
 
 if batchFlag
-    dataDir = ChooseFolder(saveTag,varargin{3});
+    dataDir = ChooseFolder(saveTag,batchInd);
     dataDir = fullfile(dataDirParent,dataDir); %get folder of current subject
 end
 
@@ -117,11 +145,17 @@ newfolder = false;
 try
     dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
 catch
+    warning('Folder "%s" could not be found or does not exist. Continuing...',dataDir);
     tmp = strsplit(splitdir{end-1},'_');
     dcmInfo.PatientID = char(join(tmp(2:end),'_'));
 end
 
-saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
+switch saveTag
+    case 'steve_cmo'
+        saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,additionalID);
+    otherwise
+        saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
+end
 % warning('off','MATLAB:MKDIR:DirectoryExists');
 
 try
@@ -160,7 +194,7 @@ if ~newfolder
     end
     
     %{
-    lastFunc = 'AnalyseDicoms'; %override
+    lastFunc = 'CategoriseAndConstrain'; %override
     %}
     
     switch lastFunc
@@ -243,7 +277,7 @@ if ~newfolder
     end
 end
 
-save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','doAffineReg','glyphs','additionalID','lb_labels','hb_labels');
+save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','affine','glyphs','additionalID','lowbLabels','highbLabels');
 
 %% load images
 if isempty(lastFunc)
@@ -259,7 +293,7 @@ end
 
 %% sort images by slice and phase
 if strcmp(lastFunc,'AnalyseDicoms')
-    [CurrentSlice,CurrentInfo,contours] = CategoriseAndConstrain(ProvisionalDiffusionDicoms,ProvisionalInfo); %✓
+    [CurrentSlice,CurrentInfo,contours] = CategoriseAndConstrain(ProvisionalDiffusionDicoms,ProvisionalInfo,'RefLowB',lowbFixed); %✓
     lastFunc = 'CategoriseAndConstrain';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
     save(fullfile(saveDir,'Current.mat'),'CurrentSlice','CurrentInfo');
@@ -285,7 +319,7 @@ end
 
 %% register and segment
 if strcmp(lastFunc,'RejectImages')
-    [CleanData,CleanInfo,Trace] = Registration(CleanData,CleanInfo,contours,doAffineReg); %✓
+    [CleanData,CleanInfo,Trace] = Registration(CleanData,CleanInfo,contours,affine,'RefLowB',lowbFixed); %✓
     lastFunc = 'Registration';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
     save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
@@ -293,7 +327,7 @@ if strcmp(lastFunc,'RejectImages')
 end
 
 if strcmp(lastFunc,'Registration')
-    [CleanInfo,contours] = DefineROI(Trace,CleanInfo,contours); %✓
+    [CleanInfo,contours] = DefineROI(Trace,CleanInfo,contours,'RefLowB',lowbFixed); %✓
 %     [CleanInfo,contours] = ResampleROI(CleanInfo,contours);
     lastFunc = 'DefineROI';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
@@ -344,13 +378,13 @@ end
 
 % export images and data to excel
 if strcmp(lastFunc,'SegmentalAnalysis')
-    savePNGs(CleanMaps,Trace,contours,saveDir,lb_labels,hb_labels); %✓
+    savePNGs(CleanMaps,HRCorrInfo,Trace,contours,saveDir,'LowB',lowbLabels,'HighB',highbLabels,'PrintAllMaps',allMaps,'CustomColourmap',customMaps,'RefLowB',lowbFixed); %✓
     lastFunc = 'savePNGs';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
 end
 
 if strcmp(lastFunc,'savePNGs')&&glyphs
-    figures = GlyphDTI(CleanTensor,CleanMaps,contours,Trace,lb_labels,hb_labels);
+    figures = GlyphDTI(CleanTensor,CleanMaps,HRCorrInfo,contours,Trace,'LowB',lowbLabels,'HighB',highbLabels,'RefLowB',lowbFixed);
     SaveGlyphs(figures,saveDir);
     lastFunc = 'GlyphDTI';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
@@ -362,11 +396,11 @@ if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'GlyphDTI')
     if (ispc)
         warning('off','MATLAB:MKDIR:DirectoryExists');
         [Excel, Workbook] = StartExcel; %✓
-        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
         warning('on','MATLAB:MKDIR:DirectoryExists');
         saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
     else
-        WriteExcelSheetMac(CleanSegments,HRCorrInfo,saveDir,dcmInfo.PatientID,lb_labels,hb_labels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheetMac(CleanSegments,HRCorrInfo,saveDir,additionalID,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
     end
 end
 

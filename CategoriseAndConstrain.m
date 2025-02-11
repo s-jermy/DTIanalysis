@@ -1,4 +1,4 @@
-function [dicom2,nfo2,contours] = CategoriseAndConstrain(dicom,nfo)
+function [dicom2,nfo2,contours] = CategoriseAndConstrain(dicom,nfo,varargin)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
@@ -15,6 +15,27 @@ function [dicom2,nfo2,contours] = CategoriseAndConstrain(dicom,nfo)
 dicom2 = {};
 nfo2 = {};
 contours = {};
+refBVal = [];
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
+end
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'RefLowB'
+            refBVal = value;
+        otherwise
+            warning('Unknown parameter: %s', key);
+    end
+end
+
+if isempty(refBVal)
+    refBVal = 50;
+end
 
 SliceLocations = arrayfun(@(x) x.SliceLocation,nfo.Info);
 CardiacPhases = arrayfun(@(x) x.TriggerTime,nfo.Info);
@@ -54,7 +75,7 @@ clear uSl uCp
 [uSl1,~,uSl3] = unique(SliceLocations);
 
 if length(uCp1)>1
-    'here'
+    error('sj - more than one unique cardiac phase');
 end
 
 ind = 0;
@@ -94,14 +115,14 @@ for i = 1:length(uCp1)
     
         %new logic for multiple b-values
         [uBVal,uBV1,~] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
-        idx = uBVal==50;
+        idx = uBVal==refBVal;
         if ~any(idx)
             idx = uBVal==0|uBVal==15;
             if ~any(idx)
                 idx = 1;
             end
         end
-        fixedImage = uBV1(idx); % find first b50 image
+        fixedImage = uBV1(idx); % find first lowB fixed image
     
         if (length(dicom2{i})>=7)
             if (nfo2{ind}.Info(fixedImage(1)).TriggerTime >= 500)

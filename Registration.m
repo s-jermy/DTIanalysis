@@ -1,4 +1,4 @@
-function [dicom2,nfo2,trace] = Registration(dicom,nfo,contours,doAff)
+function [dicom2,nfo2,trace] = Registration(dicom,nfo,contours,doAff,varargin)
 % in:
 % dicom - struct containing diffusion images
 % nfo - struct containing info about dicom images
@@ -17,6 +17,28 @@ dicom2 = dicom;
 nfo2 = nfo;
 trace = {};
 
+refBVal = [];
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
+end
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'RefLowB'
+            refBVal = value;
+        otherwise
+            warning('Unknown parameter: %s', key);
+    end
+end
+
+if isempty(refBVal)
+    refBVal = 50;
+end
+
 %%
 cardiacphases = fieldnames(dicom);
 
@@ -31,12 +53,9 @@ for i = 1:length(cardiacphases)
         rec = contours.rec{j};
         B_values = arrayfun(@(x) x.B_value,SliceInfo);
         [uBVal,uBV1,uBV2] = unique(B_values);
-        idx = uBVal==50;
+        idx = uBVal==refBVal;
         if ~any(idx)
-            idx = uBVal==0|uBVal==15;
-            if ~any(idx)
-                idx = 1;
-            end
+            idx = 1;
         end
     
         warning('off','all');
@@ -46,15 +65,15 @@ for i = 1:length(cardiacphases)
         imrangey = rec(1,2):rec(3,2);
     
         if doAff
-            regTo = find(idx);
-            RegData = AffineReg(SliceData,imrangex,imrangey,B_values,regTo(1));
+            refTo = find(idx);
+            RegData = AffineReg(SliceData,imrangex,imrangey,B_values,refTo(1));
         else
-            regTo = uBV1(idx);
+            refTo = uBV1(idx);
             % regTo = find(cat(1,SliceData(:).contoursDefined)); %haven't defined any contours so...
             if isfield(nfo{j},'RegisterInMatlab')
-                regTo = nfo{j}.RegisterInMatlab; %I haven't actually done anything with this field, could be used to override the above if there is a specific image you wish to use
+                refTo = nfo{j}.RegisterInMatlab; %I haven't actually done anything with this field, could be used to override the above if there is a specific image you wish to use
             end
-            RegData = SimpleReg(SliceData,imrangex,imrangey,regTo(1));
+            RegData = SimpleReg(SliceData,imrangex,imrangey,refTo(1));
         end
     
         for k=1:length(uBVal)

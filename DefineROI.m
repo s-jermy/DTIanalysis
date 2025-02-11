@@ -1,4 +1,4 @@
-function [nfo2,contours2] = DefineROI(trace,nfo,contours)
+function [nfo2,contours2] = DefineROI(trace,nfo,contours,varargin)
 % in:
 % trace - structure containing average image for each b-value
 % nfo - structure containing info about dicom images
@@ -13,11 +13,33 @@ function [nfo2,contours2] = DefineROI(trace,nfo,contours)
 
 nfo2 = nfo;
 contours2 = contours;
+
 P_Endo={};
 P_Epi={};
 P_RVI={};
 M_LV={};
 M_Depth={};
+refBVal = [];
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
+end
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'RefLowB'
+            refBVal = value;
+        otherwise
+            warning('Unknown parameter: %s', key);
+    end
+end
+
+if isempty(refBVal)
+    refBVal = 50;
+end
 
 for i = 1:length(trace)
     if isempty(trace{i})
@@ -28,8 +50,16 @@ for i = 1:length(trace)
         M_Depth{i} = [];
         continue
     end
-    
-    RoiImage = trace{i}{2}; %use the b50 trace of each slice to draw ROIs
+
+    SliceInfo = nfo{i}.SliceInfo;
+    B_values = arrayfun(@(x) x.B_value,SliceInfo);
+    uBVal = unique(B_values);
+    idx = uBVal==refBVal;
+    if ~any(idx)
+        idx = 1;
+    end
+    refTo = find(idx);
+    RoiImage = trace{i}{refTo(1)}; %use the ref trace of each slice to draw ROIs
     [Xq,Yq] = meshgrid(1:size(RoiImage,2),1:size(RoiImage,1));
     
     try %reuse and edit previously defined contours        

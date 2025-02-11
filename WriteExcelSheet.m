@@ -1,13 +1,24 @@
 function WriteExcelSheet(Excel,Workbook,SegmentedData,nfo,saveDir,varargin)
 
-narginchk(5,7);
 lowb_labels = {};
 highb_labels = {};
-if nargin>5
-    lowb_labels = varargin{1};
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
 end
-if nargin>6
-    highb_labels = varargin{2};
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'LowB'
+            lowb_labels = value;
+        case 'HighB'
+            highb_labels = value;
+        otherwise
+            error('Unknown parameter: %s', key);
+    end
 end
 
 % Get a handle to Sheets and select Sheet 1

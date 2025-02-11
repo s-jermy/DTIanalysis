@@ -1,4 +1,4 @@
-function savePNGs(map_dicom,trace,contours,saveDir,varargin)
+function savePNGs(map_dicom,nfo,trace,contours,saveDir,varargin)
 % in:
 % map_dicom - struct containing diffusion maps
 % trace - struct containing average image for each b-value
@@ -18,6 +18,7 @@ highb_labels = {};
 tog_cmap = 1;
 tog_alpha = 1;
 tog_allmaps = 1;
+lowb_ref = [];
 
 if mod(numel(varargin), 2) ~= 0
     error('Arguments must be provided in key-value pairs.');
@@ -28,6 +29,8 @@ for i = 1:2:numel(varargin)
     value = varargin{i+1};
 
     switch key
+        case 'RefLowB'
+            lowb_ref = value;
         case 'LowB'
             lowb_labels = value;
         case 'HighB'
@@ -43,6 +46,10 @@ for i = 1:2:numel(varargin)
     end
 end
 
+if isempty(lowb_ref)
+    lowb_ref = 50;
+end
+
 cardiacphases = fieldnames(map_dicom);
 if ~tog_cmap
     cmap = "turbo";
@@ -53,7 +60,8 @@ for i=1:length(cardiacphases)
     slicelocation = fieldnames(map_dicom.(cardiacphases{i}));
     for j=1:length(slicelocation)
         TMPmap = map_dicom.(cardiacphases{i}).(slicelocation{j});
-        
+        SliceInfo = nfo{j}.SliceInfo;
+
         if isempty(TMPmap)
             continue
         end
@@ -68,7 +76,15 @@ for i=1:length(cardiacphases)
         else
             M_myo = ones(size(contours.myoMask{j}));
         end
-        under = trace{j}{2}; %b50 trace image used as base image
+        
+        B_values = arrayfun(@(x) x.B_value,SliceInfo);
+        uBVal = unique(B_values);
+        idx = uBVal==lowb_ref;
+        if ~any(idx)
+            idx = 1;
+        end
+        refTo = find(idx);
+        under = trace{j}{refTo(1)}; %ref trace image used as base image
     
         mapnames = fieldnames(TMPmap);
         for k=1:length(mapnames)

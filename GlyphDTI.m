@@ -1,4 +1,4 @@
-function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,varargin)
+function [figures] = GlyphDTI(tensor_dicom,map_dicom,nfo,contours,trace,varargin)
 
 % out:
 % figures - struct containing the glyph figures generated
@@ -16,6 +16,7 @@ function [figures] = GlyphDTI(tensor_dicom,map_dicom,contours,trace,varargin)
 lowb_labels = {};
 highb_labels = {};
 tog_cmap = 1;
+lowb_ref = [];
 
 if mod(numel(varargin), 2) ~= 0
     error('Arguments must be provided in key-value pairs.');
@@ -26,6 +27,8 @@ for i = 1:2:numel(varargin)
     value = varargin{i+1};
 
     switch key
+        case 'RefLowB'
+            lowb_ref = value;
         case 'LowB'
             lowb_labels = value;
         case 'HighB'
@@ -35,6 +38,10 @@ for i = 1:2:numel(varargin)
         otherwise
             error('Unknown parameter: %s', key);
     end
+end
+
+if isempty(lowb_ref)
+    lowb_ref = 50;
 end
 
 fignum = 1;
@@ -57,6 +64,7 @@ for i=1:length(cardiacphases)
         mapnum = 1;
         TMPtensor = tensor_dicom.(cardiacphases{i}).(slicelocation{j});
         TMPmap = map_dicom.(cardiacphases{i}).(slicelocation{j});
+        SliceInfo = nfo{j}.SliceInfo;
         
         if isempty(TMPmap)||isempty(TMPtensor)
             continue
@@ -64,7 +72,15 @@ for i=1:length(cardiacphases)
         
         M_myo = contours.myoMask{j};
         M_myo = permute(repmat(M_myo,[1 1 3 3]),[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
-        under = trace{j}{2}; %b50 trace image used as base image
+        
+        B_values = arrayfun(@(x) x.B_value,SliceInfo);
+        uBVal = unique(B_values);
+        idx = uBVal==lowb_ref;
+        if ~any(idx)
+            idx = 1;
+        end
+        refTo = find(idx);
+        under = trace{j}{refTo(1)}; %ref trace image used as base image
         
         P = prctile([contours.epi{j};contours.endo{j}],[0 25 50 75 100],1); %calculate percentiles of epi and endo
 
@@ -128,14 +144,10 @@ for i=1:length(cardiacphases)
                         %     end
                         %     lim = [-90 90];
                         case 'HA_filt' %filtered helix angle
-                            if tog_cmap
-                                cmap = other_colormap('pf_helix_angle');
-                            end
+                            cmap = other_colormap('pf_helix_angle');
                             lim = [-90 90];
                         case 'E2A' %absolute secondary eigenvector angle
-                            if tog_cmap
-                                cmap = other_colormap('pf_abs_E2A');
-                            end
+                            cmap = other_colormap('pf_abs_E2A');
                             lim = [0 90];
                         % case 'TRA' %transverse angle
                         %     if tog_cmap
