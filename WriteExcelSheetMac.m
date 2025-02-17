@@ -31,6 +31,7 @@ varNames = {'Phase','Slice','lowB','highB', ...
 T_summ = table('Size',sz,'VariableTypes',varTypes,'VariableNames',varNames);
 writetable(T_summ,fullfile(saveDir,[AddID '.xlsx']),'Sheet','Summary'); % write initial empty table that will updated at the end
 
+cardiacphases = fieldnames(SegmentedData);
 for i=1:length(cardiacphases)
     SegPhase = SegmentedData.(cardiacphases{i});
     slicelocation = fieldnames(SegPhase);

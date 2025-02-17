@@ -15,7 +15,7 @@ function savePNGs(map_dicom,nfo,trace,contours,saveDir,varargin)
 
 lowb_labels = {};
 highb_labels = {};
-tog_cmap = 1;
+tog_cmap = 0;
 tog_alpha = 1;
 tog_allmaps = 1;
 lowb_ref = [];
