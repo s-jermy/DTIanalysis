@@ -26,16 +26,16 @@ switch tag
     case 'steve_cmo'
         files={...
             % fullfile('CMO','20220816_1404_STEVE_CMO_001','BH'),...	TN
-            fullfile('CMO','20230310_1035_STEVE_CMO_006','BH'),...	#1 - KO
-            fullfile('CMO','20230310_1035_STEVE_CMO_006','CS'),...	#2 - KO
-            fullfile('CMO','20230217_1404_STEVE_CMO_005','BH'),...	#3 - NV
-            fullfile('CMO','20230217_1404_STEVE_CMO_005','CS'),...	#4 - NV
-            fullfile('CMO','20220816_1404_STEVE_CMO_002','BH'),...	#5 - MH - problem with cardiac phases
-            fullfile('CMO','20220816_1404_STEVE_CMO_002','CS'),...	#6 - MH
-            fullfile('CMO','20230203_1405_STEVE_CMO_004','BH'),...	#7 - RS
-            fullfile('CMO','20230203_1405_STEVE_CMO_004','CS'),...	#8 - RS
-            fullfile('CMO','20230310_1440_STEVE_CMO_007','BH'),...	#9 - FO
-            fullfile('CMO','20230310_1440_STEVE_CMO_007','CS')...	#10 - FO
+            fullfile('CMO','20220816_1404_STEVE_CMO_002','BH'),...	#1 - MH - problem with cardiac phases
+            fullfile('CMO','20220816_1404_STEVE_CMO_002','CS'),...	#2 - MH
+            fullfile('CMO','20230203_1405_STEVE_CMO_004','BH'),...	#3 - RS
+            fullfile('CMO','20230203_1405_STEVE_CMO_004','CS'),...	#4 - RS
+            fullfile('CMO','20230217_1404_STEVE_CMO_005','BH'),...	#5 - NV
+            fullfile('CMO','20230217_1404_STEVE_CMO_005','CS'),...	#6 - NV
+            fullfile('CMO','20230310_1035_STEVE_CMO_006','BH'),...	#7 - KO
+            fullfile('CMO','20230310_1035_STEVE_CMO_006','CS'),...	#8 - KO
+            fullfile('CMO','20230310_1440_STEVE_CMO_007','BH'),...	#9 - FO'C
+            fullfile('CMO','20230310_1440_STEVE_CMO_007','CS')...	#10 - FO'C
             };
     case 'steve_cubic'
         files={...
