@@ -34,6 +34,7 @@ glyphs = false;
 affine = true;
 lowbLabels = {};
 highbLabels = {};
+lowbFixed = [];
 customMaps = false;
 useMapMask = true;
 allMaps = false;
@@ -61,6 +62,8 @@ for i = 1:2:numel(varargin)
             lowbLabels = value;
         case 'HighB'
             highbLabels = value;
+        case 'RefLowB'
+            lowbFixed = value;
         case 'CustomColourmap'
             customMaps = value;
         case 'MapMask'
@@ -117,11 +120,13 @@ else
     additionalID = 'HRcorr_dti'; %sj - tags for changes
 end
 
-if ~isempty(lowbLabels)
-    lowbValues = cellfun(@(s) str2double(strjoin(regexp(s,'\d','match'),'')),lowbLabels);
-    lowbFixed = min(lowbValues(:));
-else
-    lowbFixed = 50;
+if isempty(lowbFixed)
+    if ~isempty(lowbLabels)
+        lowbValues = cellfun(@(s) str2double(strjoin(regexp(s,'\d','match'),'')),lowbLabels);
+        lowbFixed = min(lowbValues(:));
+    else
+        lowbFixed = 0;
+    end
 end
 
 %% check/create folders
@@ -145,9 +150,7 @@ newfolder = false;
 try
     dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
 catch
-    warning('Folder "%s" could not be found or does not exist. Continuing...',dataDir);
-    tmp = strsplit(splitdir{end-1},'_');
-    dcmInfo.PatientID = char(join(tmp(2:end),'_'));
+    error('Folder "%s" could not be found or does not exist.',dataDir);
 end
 
 switch saveTag
@@ -378,7 +381,7 @@ end
 
 % export images and data to excel
 if strcmp(lastFunc,'SegmentalAnalysis')
-    savePNGs(CleanMaps,HRCorrInfo,Trace,contours,saveDir,'LowB',lowbLabels,'HighB',highbLabels,'PrintAllMaps',allMaps,'CustomColourmap',customMaps,'RefLowB',lowbFixed); %✓
+    savePNGs(CleanMaps,HRCorrInfo,Trace,contours,saveDir,'LowB',lowbLabels,'HighB',highbLabels,'PrintAllMaps',allMaps,'CustomColourmap',customMaps,'RefLowB',lowbFixed,'MapMask',useMapMask); %✓
     lastFunc = 'savePNGs';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
 end

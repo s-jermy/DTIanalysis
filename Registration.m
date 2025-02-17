@@ -36,7 +36,7 @@ for i = 1:2:numel(varargin)
 end
 
 if isempty(refBVal)
-    refBVal = 50;
+    refBVal = 0;
 end
 
 %%
@@ -53,7 +53,14 @@ for i = 1:length(cardiacphases)
         rec = contours.rec{j};
         B_values = arrayfun(@(x) x.B_value,SliceInfo);
         [uBVal,uBV1,uBV2] = unique(B_values);
-        idx = uBVal==refBVal;
+        if refBVal==0||refBVal==15
+            idx = uBVal==0;
+            if ~any(idx)
+                idx = uBVal==15;
+            end
+        else
+            idx = uBVal==refBVal;
+        end
         if ~any(idx)
             idx = 1;
         end
@@ -110,7 +117,7 @@ if isempty(slice_dicom)
     return
 end
 
-h = waitbar(0,'Performing initial registration...');
+h = waitbar(0,'Performing initial registration on fixed images...');
 
 trans = {};
 

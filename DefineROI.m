@@ -38,7 +38,7 @@ for i = 1:2:numel(varargin)
 end
 
 if isempty(refBVal)
-    refBVal = 50;
+    refBVal = 0;
 end
 
 for i = 1:length(trace)
@@ -54,7 +54,14 @@ for i = 1:length(trace)
     SliceInfo = nfo{i}.SliceInfo;
     B_values = arrayfun(@(x) x.B_value,SliceInfo);
     uBVal = unique(B_values);
-    idx = uBVal==refBVal;
+    if refBVal==0||refBVal==15
+        idx = uBVal==0;
+        if ~any(idx)
+            idx = uBVal==15;
+        end
+    else
+        idx = uBVal==refBVal;
+    end
     if ~any(idx)
         idx = 1;
     end
@@ -198,21 +205,21 @@ hold on
 
 nInterp = size(epi,1);
 
-epiRoi = drawpolyline('Color',[0 1 0],'Position',epi(1:5:end,:));
+epiRoi = drawpolyline(Color=[0 1 0],Position=epi(1:5:end,:));
 epiRoi.InteractionsAllowed = 'all';
 fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,epiRoi));
 epiRoi.Label = 'Enter key to finish'; epiRoi.LabelAlpha = 0.5; uiwait;
 epiRoi.Label = 'Epicardium';epiRoi.LabelAlpha = 0.6;
 
 title(gca,'Edit endocardium ROI');
-endoRoi = drawpolyline('Color',[1 0 0],'Position',endo(1:5:end,:));
+endoRoi = drawpolyline(Color=[1 0 0],Position=endo(1:5:end,:));
 endoRoi.InteractionsAllowed = 'all';
 fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,endoRoi));
 endoRoi.Label = 'Enter key to finish'; endoRoi.LabelAlpha = 0.5; uiwait;
 endoRoi.Label = 'Endocardium';endoRoi.LabelAlpha = 0.6;
 
 title(gca,'Edit anterior LV/RV junction');
-rviRoi = drawpoint('Color',[0 0 1],'Position',rvi);
+rviRoi = drawpoint(Color=[0 0 1],Position=rvi);
 rviRoi.InteractionsAllowed = 'all';
 fig = gcf;set(fig, 'KeyPressFcn', @(src,event) customWait(event,rviRoi));
 rviRoi.Label = 'Enter key to finish'; rviRoi.LabelAlpha = 0.5; uiwait;

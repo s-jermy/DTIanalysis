@@ -34,7 +34,7 @@ for i = 1:2:numel(varargin)
 end
 
 if isempty(refBVal)
-    refBVal = 50;
+    refBVal = 0;
 end
 
 SliceLocations = arrayfun(@(x) x.SliceLocation,nfo.Info);
@@ -115,12 +115,16 @@ for i = 1:length(uCp1)
     
         %new logic for multiple b-values
         [uBVal,uBV1,~] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
-        idx = uBVal==refBVal;
-        if ~any(idx)
-            idx = uBVal==0|uBVal==15;
+        if refBVal==0||refBVal==15
+            idx = uBVal==0;
             if ~any(idx)
-                idx = 1;
+                idx = uBVal==15;
             end
+        else
+            idx = uBVal==refBVal;
+        end
+        if ~any(idx)
+            idx = 1;
         end
         fixedImage = uBV1(idx); % find first lowB fixed image
     

@@ -62,9 +62,11 @@ for i = 1:10
     batchFlag = true;
     batchInd = i;
     glyphs = false;
-    lowb = {'b50'};
+    lowb = {'b15','b50'};
     highb = {'b450'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb);
+    refb = 50;
+    cmap = true;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'RefLowB',refb,'CustomColourmap',cmap);
 end
 for i = 1:11
     saveTag = 'zak';

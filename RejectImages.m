@@ -32,7 +32,7 @@ for i=1:length(dicom)
     try
         FilesToUse = nfo{i}.FilesToUse;
     catch
-        FilesToUse = ones(size(nfo{i}.Info));
+        FilesToUse = true(size(nfo{i}.Info));
     end
     
     %% Fill figure array with DW images
@@ -236,7 +236,7 @@ end
 
 %% wait for user to press done for all figures
 close(f);
-f = msgbox('Ready');pause(0.5);close(f);
+f = msgbox('Ready. Execution will continue after you have marked done on each figure');pause(2);close(f);
 
 temptxt = [txt{~cellfun(@isempty,txt)}];
 while (sum(prod(cell2mat(arrayfun(@(x) x{:}{end}.UserData,temptxt,'UniformOutput',false)'),2)) < bVsum)
