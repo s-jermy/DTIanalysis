@@ -105,7 +105,7 @@ elseif ismac
         % case 'saveTag'
         %     dataDirParent = '/your/workspace/folder/'; %change as needed
         case 'steve'
-            dataDirParent = '/Volumes/mri/UserFolders/jermy/DiffusionData';
+            dataDirParent = '/Volumes/mri/UserFolders/Steve/DiffusionData';
         otherwise
             dataDirParent = pwd;
     end
@@ -116,11 +116,11 @@ dicomdict('set','dicom-dict-dti.txt'); %set dicom dictionary for added dicom att
 lastFunc = '';
 
 if glyphs
-    additionalID = 'glyph_dti';
+    analysisTag = 'glyph';
 elseif affine
-    additionalID = 'affReg_HRcorr_dti';
+    analysisTag = 'affReg';
 else
-    additionalID = 'HRcorr_dti'; %sj - tags for changes
+    analysisTag = 'simReg';
 end
 if t1
     analysisTag = [analysisTag '_HRcorr']; %sj - tags for changes
@@ -152,21 +152,24 @@ dirlisting = dir(fullfile(dataDir,'**')); %find all in the main directory includ
 
 splitdir = regexp(dataDir,filesep,'split');
 splitdir = splitdir(~cellfun('isempty',splitdir));
-additionalID = [additionalID '_' splitdir{end}];
+folderTag = splitdir{end};
 newfolder = false;
+newanalysis = false;
 
 try
     dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
 catch
-    error('Folder "%s" could not be found or does not exist.',dataDir);
+    error('There was a problem loading the first dicom from folder "%s".',dataDir);
 end
 
 switch saveTag
     case 'steve_cmo'
-        saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,additionalID);
+        saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,folderTag);
     otherwise
-        saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
+        saveDir = fullfile(saveTag,dcmInfo.PatientID,folderTag);
 end
+
+anaDir = fullfile(saveDir,analysisTag);
 % warning('off','MATLAB:MKDIR:DirectoryExists');
 
 try
@@ -175,7 +178,7 @@ try
         newfolder = true;
     end
 catch %unable to make directory (usually because of missing ID or an illegal character)
-    saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,additionalID);
+    saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,folderTag,analysisTag);
     try %try again with patient name
         if ~isfolder(saveDir)
             mkdir(saveDir);
@@ -186,22 +189,48 @@ catch %unable to make directory (usually because of missing ID or an illegal cha
         pat = regexpPattern(regex);
         ind = strfind(dcmInfo.PatientID,pat); %find and remove illegal characters
         dcmInfo.PatientID(ind)='';
-        saveDir = fullfile(saveTag,dcmInfo.PatientID,additionalID);
+        saveDir = fullfile(saveTag,dcmInfo.PatientID,folderTag,analysisTag);
         if ~isfolder(saveDir)
             mkdir(saveDir);
             newfolder = true;
         end
     end
 end
+
+if ~isfolder(anaDir)
+    mkdir(anaDir); %create a new folder for the save directory
+    newanalysis = true;
+end
 % warning('on','MATLAB:MKDIR:DirectoryExists');
 
 %% load previous files if we have run this before
 if ~newfolder
     try
-        load(fullfile(saveDir,'lastFunc.mat')); %if an operation failed part way though execution lastFunc keeps track of the last succesful function
+        load(fullfile(saveDir,'contours.mat'),'contours'); %
+    catch
+        warning('contours: No vaild files were found in that directory. Continuing...');
+        contours = struct();
+    end
+    try
+        load(fullfile(saveDir,'FilesToUse.mat'),'FilesToUse'); %
+    catch
+        warning('FilesToUse: No vaild files were found in that directory. Continuing...');
+        FilesToUse = {};
+    end
+    try
+        load(fullfile(saveDir,'Provisional.mat'),'Provisional*'); %
+        if(length(who('-regexp','Provisional*'))==2)
+            lastFunc = 'AnalyseDicoms'; %next CategoriseAndConstrain
+        end
+    catch
+        warning('Provisional: No vaild files were found in that directory. Continuing...');
+    end
+end
+if ~newanalysis
+    try
+        load(fullfile(anaDir,'lastFunc.mat'),'lastFunc'); %if an operation failed part way though execution lastFunc keeps track of the last succesful function
     catch
         warning('No vaild files were found in that directory. Continuing...');
-        lastFunc = '';
     end
     
     %{
@@ -210,85 +239,72 @@ if ~newfolder
     
     switch lastFunc
         case 'AnalyseDicoms' %next CategoriseAndConstrain
-            try
-                load(fullfile(saveDir,'Provisional.mat'),'Provisional*');
-            catch
-                lastFunc = '';
-                %basically just redo everything
+            if(length(who('-regexp','Provisional*'))~=2)
+                lastFunc = ''; %start from scratch
             end
         case 'CategoriseAndConstrain' %next RejectImages
-            load(fullfile(saveDir,'Current.mat'),'Current*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(anaDir,'Current.mat'),'Current*');
         case 'RejectImages' %next Registration
-            load(fullfile(saveDir,'Clean.mat'),'Clean*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
+            load(fullfile(anaDir,'Clean.mat'),'Clean*');
             for l = 1:length(CleanInfo)
                 CleanInfo{l}.contoursDefined = 0;
                 CleanInfo{l}.registrationComplete = 0;
             end
         case 'Registration' %next DefineROI
-            load(fullfile(saveDir,'Clean.mat'),'Clean*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'Clean.mat'),'Clean*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
             for l = 1:length(CleanInfo)
                 CleanInfo{l}.contoursDefined = 0;
             end
         case 'DefineROI' %next hrCorrection
-            load(fullfile(saveDir,'Clean.mat'),'Clean*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'Clean.mat'),'Clean*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
         case 'hrCorrection' %next Average
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
         case 'Average' %next CalculateTensor
-            load(fullfile(saveDir,'CleanAver.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanAver.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
         case 'CalculateTensor' %next DTIMaps
-            load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanAver.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanAver.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
         case 'DTIMaps' %next SegmentalAnalysis
-            load(fullfile(saveDir,'CleanMaps.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanAver.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanMaps.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanAver.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
             if glyphs
-                load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
+                load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
             end
         case 'SegmentalAnalysis' %next savePNGs
-            load(fullfile(saveDir,'CleanSegs.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanMaps.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'contours.mat'),'contours');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanSegs.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanMaps.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
             if glyphs
-                load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
+                load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
             end
         case 'savePNGs' %next WriteExcelSheet or...
-            load(fullfile(saveDir,'CleanSegs.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanSegs.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
             if glyphs %next GlyphDTI
-                load(fullfile(saveDir,'CleanTensor.mat'),'Clean*');
-                load(fullfile(saveDir,'CleanMaps.mat'),'Clean*');
-                load(fullfile(saveDir,'contours.mat'),'contours');
+                load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
+                load(fullfile(anaDir,'CleanMaps.mat'),'Clean*');
             end
         case 'GlyphDTI' %next WriteExcelSheet
-            load(fullfile(saveDir,'CleanSegs.mat'),'Clean*');
-            load(fullfile(saveDir,'CleanHRcorr.mat'),'HR*');
-            load(fullfile(saveDir,'Trace.mat'),'Trace');
+            load(fullfile(anaDir,'CleanSegs.mat'),'Clean*');
+            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
+            load(fullfile(anaDir,'Trace.mat'),'Trace');
         otherwise %start again
             lastFunc = ''; %just redo everything
     end
 end
 
-save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','affine','glyphs','additionalID','lowbLabels','highbLabels');
+save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','affine','glyphs','analysisTag','lowbLabels','highbLabels');
 
 %% load images
 if isempty(lastFunc)
@@ -298,32 +314,33 @@ if isempty(lastFunc)
     [ProvisionalDiffusionDicoms,ProvisionalInfo] = AnalyseDicoms(InitialDicoms); %✓
     lastFunc = 'AnalyseDicoms';
 
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
     save(fullfile(saveDir,'Provisional.mat'),'ProvisionalDiffusionDicoms','ProvisionalInfo');
 end
 
+%%{
 %% sort images by slice and phase
 if strcmp(lastFunc,'AnalyseDicoms')
-    [CurrentSlice,CurrentInfo,contours] = CategoriseAndConstrain(ProvisionalDiffusionDicoms,ProvisionalInfo,'RefLowB',lowbFixed); %✓
+    [CurrentSlice,CurrentInfo,contours] = CategoriseAndConstrain(ProvisionalDiffusionDicoms,ProvisionalInfo,contours,'RefLowB',lowbFixed); %✓
     lastFunc = 'CategoriseAndConstrain';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'Current.mat'),'CurrentSlice','CurrentInfo');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'Current.mat'),'CurrentSlice','CurrentInfo');
     save(fullfile(saveDir,'contours.mat'),'contours');
 end
 
 %% remove low quality images
 if strcmp(lastFunc,'CategoriseAndConstrain')
-    [AHASliceLocations,figures] = RejectImages(CurrentSlice,CurrentInfo,contours); %✓
-    lastFunc = 'RejectImages';
+    [AHASliceLocations,figures] = RejectImages(CurrentSlice,CurrentInfo,contours,FilesToUse); %✓
 
     %% create clean structures
-    [CleanData,CleanInfo,~,CurrentInfo] = CleanStruct(CurrentSlice,CurrentInfo,figures,AHASliceLocations); %✓
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'Current.mat'),'CurrentSlice','CurrentInfo');
-    save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
+    [CleanData,CleanInfo,FilesToUse] = CleanStruct(CurrentSlice,CurrentInfo,figures,AHASliceLocations); %✓
+    lastFunc = 'RejectImages';
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'Clean.mat'),'CleanData','CleanInfo');
+    save(fullfile(saveDir,'FilesToUse.mat'),'FilesToUse');
     % save(fullfile(saveDir,'contours.mat'),'contours');
 
-    SaveFigures(figures,saveDir,'RejectImages');
+    SaveFigures(figures,anaDir,'RejectImages');
 
     close all; clear figures;
 end
@@ -332,17 +349,17 @@ end
 if strcmp(lastFunc,'RejectImages')
     [CleanData,CleanInfo,Trace] = Registration(CleanData,CleanInfo,contours,affine,'RefLowB',lowbFixed); %✓
     lastFunc = 'Registration';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
-    save(fullfile(saveDir,'Trace.mat'),'Trace');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'Clean.mat'),'CleanData','CleanInfo');
+    save(fullfile(anaDir,'Trace.mat'),'Trace');
 end
 
 if strcmp(lastFunc,'Registration')
     [CleanInfo,contours] = DefineROI(Trace,CleanInfo,contours,'RefLowB',lowbFixed); %✓
 %     [CleanInfo,contours] = ResampleROI(CleanInfo,contours);
     lastFunc = 'DefineROI';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'Clean.mat'),'CleanData','CleanInfo');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'Clean.mat'),'CleanData','CleanInfo');
     save(fullfile(saveDir,'contours.mat'),'contours');
 end
 
@@ -350,55 +367,55 @@ end
 if strcmp(lastFunc,'DefineROI')
     [CorData,CorInfo] = hrAndT1Correction(CleanData,CleanInfo,'T1Corr',t1); %✓
     lastFunc = 'hrCorrection';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanHRcorr.mat'),'HRCorrData','HRCorrInfo');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'CleanCor.mat'),'CorData','CorInfo');
 end
 
 %% get average images for each unique gradient direction
 % should I get the SNR maps?
 if strcmp(lastFunc,'hrCorrection')
-    [CleanAverage,~] = Average(HRCorrData,HRCorrInfo); %✓ - fixed
+    [CleanAverage,~] = Average(CorData,CorInfo); %✓ - fixed
     lastFunc = 'Average';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanAver.mat'),'CleanAverage');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'CleanAver.mat'),'CleanAverage');
 end
 
 %% begin actual DTI analysis
 if strcmp(lastFunc,'Average')
     CleanTensor = CalculateTensor(CleanAverage); %✓
     lastFunc = 'CalculateTensor';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanTensor.mat'),'CleanTensor');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'CleanTensor.mat'),'CleanTensor');
 end
 
 if strcmp(lastFunc,'CalculateTensor')
     CleanMaps = DTIMaps(CleanTensor,contours); %✓
     lastFunc = 'DTIMaps';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanMaps.mat'),'CleanMaps');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'CleanMaps.mat'),'CleanMaps');
 end
 
 if strcmp(lastFunc,'DTIMaps')
     CleanSegments = SegmentalAnalysis(CleanMaps,CleanAverage,contours); %✓
-    CleanHASegments = SegmentalHAAnalysis(CleanMaps,HRCorrInfo,contours); %✓
+    CleanHASegments = SegmentalHAAnalysis(CleanMaps,CorInfo,contours); %✓
     CleanSegments = CombineSegs(CleanSegments,CleanHASegments);
     lastFunc = 'SegmentalAnalysis';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
-    save(fullfile(saveDir,'CleanSegs.mat'),'CleanSegments');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'CleanSegs.mat'),'CleanSegments');
 end
 
 % export images and data to excel
 if strcmp(lastFunc,'SegmentalAnalysis')
-    savePNGs(CleanMaps,HRCorrInfo,Trace,contours,saveDir,'LowB',lowbLabels,'HighB',highbLabels,'PrintAllMaps',allMaps,'CustomColourmap',customMaps,'RefLowB',lowbFixed,'MapMask',useMapMask); %✓
+    savePNGs(CleanMaps,CorInfo,Trace,contours,anaDir,'LowB',lowbLabels,'HighB',highbLabels,'PrintAllMaps',allMaps,'CustomColourmap',customMaps,'RefLowB',lowbFixed,'MapMask',useMapMask); %✓
     lastFunc = 'savePNGs';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
 end
 
 if strcmp(lastFunc,'savePNGs')&&glyphs
-    figures = GlyphDTI(CleanTensor,CleanMaps,HRCorrInfo,contours,Trace,'LowB',lowbLabels,'HighB',highbLabels,'RefLowB',lowbFixed);
-    SaveGlyphs(figures,saveDir);
+    figures = GlyphDTI(CleanTensor,CleanMaps,CorInfo,contours,Trace,'LowB',lowbLabels,'HighB',highbLabels,'RefLowB',lowbFixed);
+    SaveGlyphs(figures,anaDir);
     lastFunc = 'GlyphDTI';
-    save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
+    save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
 
     close all; clear figures;
 end
@@ -407,11 +424,11 @@ if strcmp(lastFunc,'savePNGs')||strcmp(lastFunc,'GlyphDTI')
     if (ispc)
         warning('off','MATLAB:MKDIR:DirectoryExists');
         [Excel, Workbook] = StartExcel; %✓
-        WriteExcelSheet(Excel,Workbook,CleanSegments,HRCorrInfo,saveDir,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheet(Excel,Workbook,CleanSegments,CorInfo,anaDir,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
         warning('on','MATLAB:MKDIR:DirectoryExists');
-        saveAndCloseExcel(Excel,Workbook,saveDir,additionalID); %✓
+        saveAndCloseExcel(Excel,Workbook,anaDir,analysisTag); %✓
     else
-        WriteExcelSheetMac(CleanSegments,HRCorrInfo,saveDir,additionalID,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheetMac(CleanSegments,CorInfo,anaDir,analysisTag,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
     end
 end
 
@@ -427,3 +444,5 @@ end
 % ax.YData = fliplr(ax.YData);
 % ax.Parent.YDir = 'normal';
 end
+
+%}
