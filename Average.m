@@ -77,7 +77,7 @@ for i=1:length(cardiacphases)
             else
                 dirmain = 0;
             end
-        elseif (length(dirmain) == 1)
+        elseif (isscalar(dirmain))
             regInd = uBM2==dirmain;
             TMPRegImage{dirmain} = regImage(:,:,regInd);
         end
@@ -87,7 +87,7 @@ for i=1:length(cardiacphases)
                 if (sum(bValUncorr(uBM1)==bValUncorr(uBM1(k)))>=6)
                     TMPRegImage{k} = regImage(:,:,regInd);
                 else
-                    warning('skipping b=%d s/mm^2',bValUncorr(uBM1(k)));
+                    error('Less than 6 images, error with b=%d s/mm^2',bValUncorr(uBM1(k)));
                 end
             end
         end        
