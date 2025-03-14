@@ -1,4 +1,4 @@
-function [dicom2,nfo2] = hrAndT1Correction(dicom,nfo)
+function [dicom2,nfo2] = hrAndT1Correction(dicom,nfo,varargin)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
@@ -13,6 +13,28 @@ function [dicom2,nfo2] = hrAndT1Correction(dicom,nfo)
 
 dicom2 = [];
 nfo2 = nfo;
+t1 = [];
+
+if mod(numel(varargin), 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
+end
+
+for i = 1:2:numel(varargin)
+    key = varargin{i};
+    value = varargin{i+1};
+
+    switch key
+        case 'T1Corr'
+            t1 = value;
+        otherwise
+            warning('Unknown parameter: %s', key);
+    end
+end
+
+if isempty(t1)
+    t1 = true;
+end
+
 cardiacphases = fieldnames(dicom);
 
 for i=1:length(cardiacphases)
@@ -22,11 +44,15 @@ for i=1:length(cardiacphases)
         SliceInfo = nfo{j}.SliceInfo;
 
         MagneticFieldStrength = nfo{j}.MagneticFieldStrength;
-        if MagneticFieldStrength == 1.5
-            T1Corr = 1030; 
-        elseif MagneticFieldStrength > 1.5
-            T1Corr = 1471; % 1471ms T1 of myocardium at 3T https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.20605
-        else
+        if t1
+            if MagneticFieldStrength == 1.5
+                T1Corr = 1030; 
+            elseif MagneticFieldStrength > 1.5
+                T1Corr = 1471; % 1471ms T1 of myocardium at 3T https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.20605]
+            else
+                error('Magnetic field strength is less than 1.5T')
+            end
+        else %turn off hr correction
             T1Corr = [];
         end
 
