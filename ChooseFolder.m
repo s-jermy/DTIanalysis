@@ -86,52 +86,58 @@ switch tag
             };
     case 'steve_oxford_2018'
         files={
-            fullfile('Oxford','20180627_O3TPR_CD01_10258','siemensBH'),...	    #1
-            fullfile('Oxford','20180627_O3TPR_CD01_10258','siemensGate'),...    #2
-            fullfile('Oxford','20180627_O3TPR_CD01_10258','siemensNav'),...	    #3
-            fullfile('Oxford','20180627_O3TPR_CD01_10258','steveNav'),...	    #4
-            fullfile('Oxford','20180628_O3TPR_CD11_01_10275','siemensBH'),...	#5
-            fullfile('Oxford','20180628_O3TPR_CD11_01_10275','siemensGate'),...	#6
-            fullfile('Oxford','20180628_O3TPR_CD11_01_10275','siemensNav'),...	#7
-            fullfile('Oxford','20180628_O3TPR_CD11_01_10275','steveNav'),...	#8
-            fullfile('Oxford','20180629_O3TPR_C11_01_10286','siemensBH'),...	#9
-            fullfile('Oxford','20180629_O3TPR_C11_01_10286','siemensGate'),...	#10
-            fullfile('Oxford','20180629_O3TPR_C11_01_10286','siemensNav'),...	#11
-            fullfile('Oxford','20180629_O3TPR_C11_01_10286','steveNav')...	    #12
+            fullfile('Oxford','20180627_O3TPR_CD01_10258','BH'),...	        #1
+            fullfile('Oxford','20180627_O3TPR_CD01_10258','Gate'),...       #2
+            fullfile('Oxford','20180627_O3TPR_CD01_10258','Nav'),...	    #3
+            fullfile('Oxford','20180627_O3TPR_CD01_10258','CS'),...	        #4
+            fullfile('Oxford','20180628_O3TPR_CD11-01_10275','BH'),...	    #5
+            fullfile('Oxford','20180628_O3TPR_CD11-01_10275','Gate'),...    #6
+            fullfile('Oxford','20180628_O3TPR_CD11-01_10275','Nav'),...	    #7
+            fullfile('Oxford','20180628_O3TPR_CD11-01_10275','CS'),...	    #8
+            fullfile('Oxford','20180629_O3TPR_C11-01_10286','BH'),...	    #9
+            fullfile('Oxford','20180629_O3TPR_C11-01_10286','Gate'),...	    #10
+            fullfile('Oxford','20180629_O3TPR_C11-01_10286','Nav'),...	    #11
+            fullfile('Oxford','20180629_O3TPR_C11-01_10286','CS')...	    #12
             };
     case 'steve_oxford_2020'
         files={
-            fullfile('Oxford','20200923_O3TPR_CD01_16789','siemensBH'),...	    #1
-            fullfile('Oxford','20200923_O3TPR_CD01_16789','siemensGate'),...    #2
-            fullfile('Oxford','20200923_O3TPR_CD01_16789','siemensNav'),...	    #3
-            fullfile('Oxford','20200923_O3TPR_CD01_16789','steveNav'),...	    #4
-            fullfile('Oxford','20201021_O3TPR_CD01_17059','siemensBH'),...	    #5
-            fullfile('Oxford','20201021_O3TPR_CD01_17059','siemensGate'),...    #6
-            fullfile('Oxford','20201021_O3TPR_CD01_17059','siemensNav'),...	    #7
-            fullfile('Oxford','20201021_O3TPR_CD01_17059','steveNav')...	    #8
+            fullfile('Oxford','20200923_O3TPR_CD01_16789','BH'),...	    #1
+            fullfile('Oxford','20200923_O3TPR_CD01_16789','Gate'),...   #2
+            fullfile('Oxford','20200923_O3TPR_CD01_16789','Nav'),...    #3
+            fullfile('Oxford','20200923_O3TPR_CD01_16789','CS'),...	    #4
+            fullfile('Oxford','20201021_O3TPR_CD01_17059','BH'),...	    #5
+            fullfile('Oxford','20201021_O3TPR_CD01_17059','Gate'),...   #6
+            fullfile('Oxford','20201021_O3TPR_CD01_17059','Nav'),...	#7
+            fullfile('Oxford','20201021_O3TPR_CD01_17059','CS')...	    #8
             };
     case 'steve_oxford_2021'
         files={
-            fullfile('Oxford','20211125_O3TPR_CD01_20632_complete','siemensBH'),...	    #1
-            fullfile('Oxford','20211125_O3TPR_CD01_20632_complete','siemensGate'),...   #2
-            fullfile('Oxford','20211125_O3TPR_CD01_20632_complete','siemensNav'),...    #3
-            fullfile('Oxford','20211125_O3TPR_CD01_20632_complete','steveNav'),...	    #4
-            fullfile('Oxford','20211208_steveDTIAH_complete','siemensBH'),...           #5
-            fullfile('Oxford','20211208_steveDTIAH_complete','siemensGate'),...         #6
-            fullfile('Oxford','20211208_steveDTIAH_complete','siemensNav'),...          #7
-            fullfile('Oxford','20211208_steveDTIAH_complete','steveNav'),...            #8
-            fullfile('Oxford','20211222_SteveDTIFM_complete','siemensBH'),...           #9
-            fullfile('Oxford','20211222_SteveDTIFM_complete','siemensGate2'),...        #10
-            fullfile('Oxford','20211222_SteveDTIFM_complete','siemensNav2'),...         #11
-            fullfile('Oxford','20211222_SteveDTIFM_complete','steveNav'),...            #12
-            fullfile('Oxford','20220119_steveDTIhg','siemensBH'),...                    #13
-            fullfile('Oxford','20220119_steveDTIhg','siemensGate'),...                  #14
-            fullfile('Oxford','20220119_steveDTIhg','siemensNav'),...                   #15
-            fullfile('Oxford','20220119_steveDTIhg','steveNav'),...                     #16
-            fullfile('Oxford','20220408_SteveHM','siemensBH'),...                       #17
-            fullfile('Oxford','20220408_SteveHM','siemensGate'),...                     #18
-            fullfile('Oxford','20220408_SteveHM','siemensNav'),...                      #19
-            fullfile('Oxford','20220408_SteveHM','steveNav')...                         #20
+            fullfile('Oxford','20211208_O3TPR_CD01_1234_repeat_20632','BH'),...	        #1
+            fullfile('Oxford','20211125_O3TPR_CD01_20632','Gate'),...                   #2
+            fullfile('Oxford','20211125_O3TPR_CD01_20632','Nav'),...                    #3
+            fullfile('Oxford','20211125_O3TPR_CD01_20632','CS'),...	                    #4
+            fullfile('Oxford','20211208_O3TPR_CD01_20769','BH'),...                     #5
+            fullfile('Oxford','20211208_O3TPR_CD01_20769','Gate'),...                   #6
+            fullfile('Oxford','20211208_O3TPR_CD01_20769','Nav'),...                    #7
+            fullfile('Oxford','20220304_O3TPR_CD01_7777_repeat_20769','CS'),...         #8
+            fullfile('Oxford','20211222_O3TPR_CD01_20877','BH'),...                     #9
+            fullfile('Oxford','20220217_O3TPR_C00-00_21261_repeat_20877','Gate'),...    #10
+            fullfile('Oxford','20220217_O3TPR_C00-00_21261_repeat_20877','Nav'),...     #11
+            fullfile('Oxford','20211222_O3TPR_CD01_20877','CS'),...                     #12
+            fullfile('Oxford','20220119_O3TPR_CD01_21026','BH'),...                     #13
+            fullfile('Oxford','20220119_O3TPR_CD01_21026','Gate'),...                   #14
+            fullfile('Oxford','20220119_O3TPR_CD01_21026','Nav'),...                    #15
+            fullfile('Oxford','20220119_O3TPR_CD01_21026','CS'),...                     #16
+            fullfile('Oxford','20220408_O3TPR_C21-06_21735','BH'),...                   #17
+            fullfile('Oxford','20220408_O3TPR_C21-06_21735','Gate'),...                 #18
+            fullfile('Oxford','20220408_O3TPR_C21-06_21735','Nav'),...                  #19
+            fullfile('Oxford','20220408_O3TPR_C21-06_21735','CS')...                    #20
+            };
+    case 'steve_oxford_2025'
+        files={
+            fullfile('Oxford','20250226_O3TPR_C21-06_26200','BH2RR'),...	    #1
+            fullfile('Oxford','20250226_O3TPR_C21-06_26200','CS2RR'),...	    #2
+            fullfile('Oxford','20250226_O3TPR_C21-06_26200','FB2RR'),...	    #3
             };
     case 'zak'
         files={
