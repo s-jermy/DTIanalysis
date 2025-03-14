@@ -1,4 +1,4 @@
-function [AHAslicelocations,figures] = RejectImages(dicom,nfo,contours)
+function [AHAslicelocations,figures] = RejectImages(dicom,nfo,contours,FilesToUse)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
@@ -29,10 +29,14 @@ for i=1:length(dicom)
     imrangex = rec{i}(1,1):rec{i}(3,1);
     imrangey = rec{i}(1,2):rec{i}(3,2);
 
-    try
-        FilesToUse = nfo{i}.FilesToUse;
-    catch
-        FilesToUse = true(size(nfo{i}.Info));
+    if ~isempty(FilesToUse)&&iscell(FilesToUse)
+        tmpFTU = FilesToUse{i};
+    else
+        try
+            tmpFTU = nfo{i}.FilesToUse;
+        catch
+            tmpFTU = true(size(nfo{i}.Info));
+        end
     end
     
     %% Fill figure array with DW images
@@ -41,7 +45,7 @@ for i=1:length(dicom)
         bVind = arrayfun(@(z) max(z.B_value==ubVals(bV)),nfo{i}.Info);
         dicom2{i}{bV} = dicom{i}(bVind);
         TMPnfo{i}{bV} = nfo{i}.Info(bVind);
-        TMPfilestouse = FilesToUse(bVind);
+        TMPfilestouse = tmpFTU(bVind);
         
         % now sort the images by diffusion direction and b-value
         diffDirsCell{i}{bV} = arrayfun(@(x) x.DiffDirVec,TMPnfo{i}{bV},'UniformOutput',false,'ErrorHandler',returnZeros);
@@ -236,7 +240,10 @@ end
 
 %% wait for user to press done for all figures
 close(f);
-f = msgbox('Ready. Execution will continue after you have marked done on each figure');pause(2);close(f);
+%f = msgbox('Ready. Execution will continue after you have marked done on each figure');pause(2);close(f);
+d = dialog('Position',[665 663.3333 400 50]);
+uicontrol('Parent',d,'Style','text','Position',[20 0 350 40],'String','Execution will continue after you have marked done on each figure.');
+pause(1.5);close(d);
 
 temptxt = [txt{~cellfun(@isempty,txt)}];
 while (sum(prod(cell2mat(arrayfun(@(x) x{:}{end}.UserData,temptxt,'UniformOutput',false)'),2)) < bVsum)

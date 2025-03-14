@@ -1,4 +1,4 @@
-function [dicom2,nfo2,dicom,nfo] = CleanStruct(dicom,nfo,figures,slice_loc)
+function [dicom2,nfo2,FilesToUse] = CleanStruct(dicom,nfo,figures,slice_loc)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
@@ -15,23 +15,24 @@ function [dicom2,nfo2,dicom,nfo] = CleanStruct(dicom,nfo,figures,slice_loc)
 % separate the images we want to keep from the ones we don't
 
 nfo2 = nfo;
+FilesToUse = {};
 for i=1:length(dicom)
-    FilesToUse = [];
+    tempFTU = [];
     UIDList = arrayfun(@(x) x.SOPInstanceUID,nfo{i}.Info,'UniformOutput',false);
     UIDSelected = cellfun(@(x) [x(isempty(x.UserData)).Tag ''],cat(2,figures.himage{i}{:}),'UniformOutput',false);
     UIDSelected = UIDSelected(cellfun(@(x) ~isempty(x),UIDSelected));
     if ~isempty(UIDSelected)
         for j=1:length(UIDList)
-            FilesToUse(j) = max(strcmp(UIDList{j},UIDSelected));
+            tempFTU(j) = max(strcmp(UIDList{j},UIDSelected));
         end
-        FilesToUse = logical(FilesToUse);
+        tempFTU = logical(tempFTU);
     end
     dicom2.(nfo2{i}.CardiacPhase).(slice_loc{i}).AllData = dicom{i};
-    dicom2.(nfo2{i}.CardiacPhase).(slice_loc{i}).SliceData = dicom{i}(FilesToUse);
-    nfo2{i}.SliceInfo = nfo{i}.Info(FilesToUse);
-    % update FilesToUse in both Current and CleanInfo
-    nfo2{i}.FilesToUse = FilesToUse;
-    nfo{i}.FilesToUse = FilesToUse;
+    dicom2.(nfo2{i}.CardiacPhase).(slice_loc{i}).SliceData = dicom{i}(tempFTU);
+    nfo2{i}.SliceInfo = nfo{i}.Info(tempFTU);
+    % update FilesToUse in CleanInfo
+    nfo2{i}.FilesToUse = tempFTU;
+    FilesToUse{i} = tempFTU;
 end
 
 end
