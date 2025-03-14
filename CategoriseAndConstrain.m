@@ -1,4 +1,4 @@
-function [dicom2,nfo2,contours] = CategoriseAndConstrain(dicom,nfo,varargin)
+function [dicom2,nfo2,contours2] = CategoriseAndConstrain(dicom,nfo,contours,varargin)
 % in:
 % dicom - structure containing diffusion images
 % nfo - structure containing info about dicom images
@@ -14,7 +14,7 @@ function [dicom2,nfo2,contours] = CategoriseAndConstrain(dicom,nfo,varargin)
 
 dicom2 = {};
 nfo2 = {};
-contours = {};
+contours2 = contours;
 refBVal = [];
 
 if mod(numel(varargin), 2) ~= 0
@@ -114,7 +114,7 @@ for i = 1:length(uCp1)
         nfo2{ind}.TotalGaps = gap; %duration of gaps without outliers
     
         %new logic for multiple b-values
-        [uBVal,uBV1,~] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
+        [uBVal,~,uBV2] = unique(arrayfun(@(x) x.B_value,nfo2{ind}.Info));
         if refBVal==0||refBVal==15
             idx = uBVal==0;
             if ~any(idx)
@@ -126,38 +126,56 @@ for i = 1:length(uCp1)
         if ~any(idx)
             idx = 1;
         end
-        fixedImage = uBV1(idx); % find first lowB fixed image
+        fixedImages = dicom2{ind}(uBV2==find(idx)); % find all lowB fixed images
+        fixedInfo = nfo2{ind}.Info(uBV2==find(idx));
     
         if (length(dicom2{i})>=7)
-            if (nfo2{ind}.Info(fixedImage(1)).TriggerTime >= 500)
+            if mean([fixedInfo.TriggerTime]) >= 500
                 nfo2{ind}.CardiacPhase = 'Diastole';
             else
                 nfo2{ind}.CardiacPhase = 'Systole';
             end
-            nfo2{ind}.SliceLocation = nfo2{ind}.Info(fixedImage(1)).SliceLocation;
+            nfo2{ind}.SliceLocation = fixedInfo(1).SliceLocation;
             nfo2{ind}.FilesToUse = ones(size(nfo2{ind}.Info)); %at first assume all files will be used, this will be updated after RejectImages
 
             %% Constrain
             % Draw ROI, or load previously drawn ROI
-            ima = single(dicom2{ind}(fixedImage(1)).image);
+            ima = single(mean(cat(3,fixedImages.image),3)); %naively average all images together, not keeping this info
+            %ima = single(dicom2{ind}(fixedImage(1)).image);
             try
-                WC = nfo2{ind}.Info(fixedImage(1)).WindowCenter;
-                WW = nfo2{ind}.Info(fixedImage(1)).WindowWidth;
+                WC = mean([fixedInfo.WindowCenter]);
+                WW = mean([fixedInfo.WindowWidth]);
                 low = WC-.5 - (WW-1)/2; high = WC-.5 + (WW-1)/2; % for mag image
                 ima(ima<=low) = 0; ima(ima>high) = 255;
                 ima = ((ima-(WC-.5))/(WW-1)+.5)*255;
             catch
             end
-            roifig = figure;clf;
-            imshow(uint8(ima),[]);
 
+            roifig = figure;clf;
+            imagesc(uint8(ima));colormap("gray");axis off;axis equal;
             roifig.Name = 'Drag a rectangle around heart to constrain registration';	%sj - I added an extra roi here - just a rectangle to roughly cover whole heart - to constrain registration - don't make too small
-            recRoi = drawrectangle('Color',[0 0 1]);customWait(recRoi);
-            recRoi.Label = 'Done';
+
+            try
+                vert = contours.rec{ind};
+                xs=vert(:,1);
+                ys=vert(:,2);
+                posn = [min(xs) min(ys) max(xs)-min(xs) max(ys)-min(ys)];
+                recRoi = drawrectangle('Color',[0 0 1],'Position',posn);
+                recRoi.InteractionsAllowed = 'none';
+                recRoi.Label = 'Done';pause(1);
+            catch
+                recRoi = drawrectangle('Color',[0 0 1]);
+                recRoi.InteractionsAllowed = 'all';
+                set(roifig, 'KeyPressFcn',@(src,event) customWait(event,recRoi));
+                recRoi.Label = 'Enter key to finish'; uiwait;
+                recRoi.Label = 'Done';
+            end
             tempRec = floor(recRoi.Vertices); %sj
-    %         recRoi.delete(); %sj
+            % recRoi.delete(); %sj
 
             rec{ind} = tempRec; %sj
+
+            
             % sj - the rest of the contours will be defined later
 
             close(roifig);
@@ -165,6 +183,6 @@ for i = 1:length(uCp1)
     end
 end
 
-contours.rec = rec; %sj
+contours2.rec = rec; %sj
 
 end
