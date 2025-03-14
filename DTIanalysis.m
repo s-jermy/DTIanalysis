@@ -38,6 +38,7 @@ lowbFixed = [];
 customMaps = false;
 useMapMask = true;
 allMaps = false;
+t1 = true;
 
 if mod(numel(varargin), 2) ~= 0
     error('Arguments must be provided in key-value pairs.');
@@ -64,6 +65,8 @@ for i = 1:2:numel(varargin)
             highbLabels = value;
         case 'RefLowB'
             lowbFixed = value;
+        case 'T1Corr'
+            t1 = value;
         case 'CustomColourmap'
             customMaps = value;
         case 'MapMask'
@@ -119,6 +122,11 @@ elseif affine
 else
     additionalID = 'HRcorr_dti'; %sj - tags for changes
 end
+if t1
+    analysisTag = [analysisTag '_HRcorr']; %sj - tags for changes
+end
+
+analysisTag = [analysisTag '_dti'];
 
 if isempty(lowbFixed)
     if ~isempty(lowbLabels)
@@ -340,7 +348,7 @@ end
 
 %% apply corrections for heart rate and T1 relaxation
 if strcmp(lastFunc,'DefineROI')
-    [HRCorrData,HRCorrInfo] = hrAndT1Correction(CleanData,CleanInfo); %✓
+    [CorData,CorInfo] = hrAndT1Correction(CleanData,CleanInfo,'T1Corr',t1); %✓
     lastFunc = 'hrCorrection';
     save(fullfile(saveDir,'lastFunc.mat'),'lastFunc');
     save(fullfile(saveDir,'CleanHRcorr.mat'),'HRCorrData','HRCorrInfo');
