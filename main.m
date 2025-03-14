@@ -35,27 +35,40 @@ for i = 1:12
     batchFlag = true;
     batchInd = i;
     glyphs = false;
+    t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb);
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
 end
 for i = 1:8
     saveTag = 'steve_oxford_2020';
     batchFlag = true;
     batchInd = i;
     glyphs = false;
+    t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb);
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
 end
 for i = 1:20
     saveTag = 'steve_oxford_2021';
     batchFlag = true;
     batchInd = i;
     glyphs = false;
+    t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb);
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+end
+for i = 1:3
+    saveTag = 'steve_oxford_2025';
+    batchFlag = true;
+    batchInd = i;
+    glyphs = false;
+    t1 = false;
+    lowb = {'b50'};
+    highb = {'b450'};
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
 end
 for i = 1:10
     saveTag = 'steve_cmo';
@@ -66,7 +79,8 @@ for i = 1:10
     highb = {'b450'};
     refb = 50;
     cmap = true;
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'RefLowB',refb,'CustomColourmap',cmap);
+    t1 = false;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'RefLowB',refb,'T1Corr',t1);
 end
 for i = 1:11
     saveTag = 'zak';
