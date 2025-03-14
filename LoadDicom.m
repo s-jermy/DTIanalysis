@@ -18,7 +18,8 @@ notdir = arrayfun(@(x) ~x.isdir,dirlisting);
 dirlisting = dirlisting(notdir); %remove folders
 
 [~,~,ext] = arrayfun(@(x) fileparts(x.name),dirlisting,'UniformOutput',false);
-valid = cellfun(@(x) all(x=='.ima'|x=='.dcm'),ext);
+validExt = {'.ima', '.dcm'};
+valid = cellfun(@(x) ismember(x, validExt), ext);
 dirlisting = dirlisting(valid); %remove non-dicom files
 
 for j=1:length(dirlisting)
