@@ -51,16 +51,17 @@ if isempty(lowb_ref)
 end
 
 cardiacphases = fieldnames(map_dicom);
-if ~tog_cmap
-    cmap = "turbo";
-    %cmap = other_colormap("inferno");
-end
 
 for i=1:length(cardiacphases)
     slicelocation = fieldnames(map_dicom.(cardiacphases{i}));
     for j=1:length(slicelocation)
         TMPmap = map_dicom.(cardiacphases{i}).(slicelocation{j});
         SliceInfo = nfo{j}.SliceInfo;
+
+        if ~tog_cmap
+            cmap = "turbo";
+            %cmap = other_colormap("inferno");
+        end
 
         if isempty(TMPmap)
             continue
