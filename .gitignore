@@ -9,3 +9,5 @@ superellipsoid_demo/
 *.fig
 *.txt
 .DS_Store
+/temp
+*.gif
