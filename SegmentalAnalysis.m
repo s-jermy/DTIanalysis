@@ -158,7 +158,7 @@ end
 angle = 360/segs;
 
 hf = figure;
-imshow(aver,[]); colormap('gray');
+imagesc(aver); colormap('gray'); axis off; axis equal;
 
 masksize = size(aver);
 [xx, yy] = meshgrid(1:masksize(2),1:masksize(1));
