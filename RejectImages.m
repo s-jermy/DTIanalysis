@@ -101,13 +101,13 @@ for i=1:length(dicom)
             mag = single(dicom2{i}{bV}(j).image(imrangey,imrangex));
 
             try
-            % window individual images before combining into one - modified
-            % imshowpair
-            WC = TMPnfo{i}{bV}(j).WindowCenter;
-            WW = TMPnfo{i}{bV}(j).WindowWidth;
-            low = WC-.5 - (WW-1)/2; high = WC-.5 + (WW-1)/2; % for mag images
-            mag(mag<=low) = 0; mag(mag>high) = 255;
-            mag = ((mag-(WC-.5))/(WW-1)+.5)*255;
+                % window individual images before combining into one - modified
+                % imshowpair
+                WC = TMPnfo{i}{bV}(j).WindowCenter;
+                WW = TMPnfo{i}{bV}(j).WindowWidth;
+                low = WC-.5 - (WW-1)/2; high = WC-.5 + (WW-1)/2; % for mag images
+                mag(mag<=low) = 0; mag(mag>high) = 255;
+                mag = ((mag-(WC-.5))/(WW-1)+.5)*255;
             catch
             end
             
