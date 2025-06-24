@@ -135,9 +135,17 @@ switch tag
             };
     case 'steve_oxford_2025'
         files={
-            fullfile('Oxford','20250226_O3TPR_C21-06_26200','BH2RR'),...	    #1
-            fullfile('Oxford','20250226_O3TPR_C21-06_26200','CS2RR'),...	    #2
-            fullfile('Oxford','20250226_O3TPR_C21-06_26200','FB2RR'),...	    #3
+            fullfile('Oxford','20250226_O3TPR_C21-06_26200','BH2RR'),...    #1
+            fullfile('Oxford','20250226_O3TPR_C21-06_26200','CS2RR'),...    #2
+            fullfile('Oxford','20250226_O3TPR_C21-06_26200','FB2RR'),...    #3
+            fullfile('Oxford','20250602_O3TPR_CD01_26437','BH'),...         #4
+            fullfile('Oxford','20250602_O3TPR_CD01_26437','Nav'),...        #5
+            fullfile('Oxford','20250603_O3TPR_CD01_26440','BH'),...         #6
+            fullfile('Oxford','20250603_O3TPR_CD01_26440','Gate'),...       #7
+            fullfile('Oxford','20250603_O3TPR_CD01_26440','Nav'),...        #8
+            fullfile('Oxford','20250603_O3TPR_CD01_26443','BH'),...         #9
+            fullfile('Oxford','20250603_O3TPR_CD01_26443','Gate'),...       #10
+            fullfile('Oxford','20250603_O3TPR_CD01_26443','Nav'),...        #11
             };
     case 'zak'
         files={

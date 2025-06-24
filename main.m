@@ -70,6 +70,16 @@ for i = 1:3
     highb = {'b450'};
     DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
 end
+for i = 4:11
+    saveTag = 'steve_oxford_2025';
+    batchFlag = true;
+    batchInd = i;
+    glyphs = false;
+    t1 = false;
+    lowb = {'b50','b350'};
+    highb = {'b350','b450','b550','b650'};
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+end
 for i = 1:10
     saveTag = 'steve_cmo';
     batchFlag = true;

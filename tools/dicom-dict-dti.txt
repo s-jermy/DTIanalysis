@@ -1500,6 +1500,7 @@
 (0051,1011) LO	ImaPATModeText	1
 (0051,1012) SH	TablePositionText	1
 (0051,1013) SH	PositivePCSDirectionsText	1
+(0051,1014) SH	VelocityEncodingText	1
 (0051,1015) SH	DataFilterText	1
 (0051,1016) LO	ImageTypeText	1
 (0051,1017) SH	SliceThicknessText	1

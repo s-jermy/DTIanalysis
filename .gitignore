@@ -1,13 +1,5 @@
-old/
-plotDTI/
-superellipsoid_demo/
-*.mat
-*.png
-*.xlsx
-*.asv
-*.dcm
-*.fig
-*.txt
-.DS_Store
 /temp
-*.gif
+*.asv
+.DS_Store
+/old
+/tools/cardiac_DTI_colormaps
