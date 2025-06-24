@@ -164,13 +164,10 @@ end
 
 switch saveTag
     case 'steve_cmo'
-        saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,folderTag);
+        saveDir = fullfile('output',saveTag,dcmInfo.PatientName.FamilyName,folderTag);
     otherwise
-        saveDir = fullfile(saveTag,dcmInfo.PatientID,folderTag);
+        saveDir = fullfile('output',saveTag,dcmInfo.PatientID,folderTag);
 end
-
-anaDir = fullfile(saveDir,analysisTag);
-% warning('off','MATLAB:MKDIR:DirectoryExists');
 
 try
     if ~isfolder(saveDir)
@@ -178,7 +175,7 @@ try
         newfolder = true;
     end
 catch %unable to make directory (usually because of missing ID or an illegal character)
-    saveDir = fullfile(saveTag,dcmInfo.PatientName.FamilyName,folderTag,analysisTag);
+    saveDir = fullfile('output',saveTag,dcmInfo.PatientName.FamilyName,folderTag);
     try %try again with patient name
         if ~isfolder(saveDir)
             mkdir(saveDir);
@@ -189,13 +186,16 @@ catch %unable to make directory (usually because of missing ID or an illegal cha
         pat = regexpPattern(regex);
         ind = strfind(dcmInfo.PatientID,pat); %find and remove illegal characters
         dcmInfo.PatientID(ind)='';
-        saveDir = fullfile(saveTag,dcmInfo.PatientID,folderTag,analysisTag);
+        saveDir = fullfile('output',saveTag,dcmInfo.PatientID,folderTag);
         if ~isfolder(saveDir)
             mkdir(saveDir);
             newfolder = true;
         end
     end
 end
+
+anaDir = fullfile(saveDir,analysisTag);
+% warning('off','MATLAB:MKDIR:DirectoryExists');
 
 if ~isfolder(anaDir)
     mkdir(anaDir); %create a new folder for the save directory
