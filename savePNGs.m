@@ -114,29 +114,31 @@ for i=1:length(cardiacphases)
                             label = ['MD (' '\x03bc' 'm^2/ms)'];
                             ForFig = ForFig*1e3;
                             if median(ForFig(M_myo))>2.5
-                                clims = [0 5];
+                                clims = [0 3];
                             else
                                 clims = [0 2.5];
                             end
                             if tog_cmap
-                                cmap = other_colormap('pf_MD');
+                                cmap = "hot";
+                                %cmap = other_colormap('pf_MD');
                             end
                         case 'FA' %fractional anisotropy
                             label = 'FA';
                             clims = [0 1];
                             if tog_cmap
-                                cmap = other_colormap('pf_FA');
+                                cmap = brewermap([],"-RdYlGn");
+                                %cmap = other_colormap('pf_FA');
                             end
                         
                         case 'HA' %helix angle
                             label = 'Helix angle (°)';
-                            clims = [-90 90];
+                            clims = [-60 60];
                             if tog_cmap
                                 cmap = other_colormap('pf_helix_angle');
                             end
                         case 'HA_filt' %filtered helix angle
                             label = 'Filtered Helix angle (°)';
-                            clims = [-90 90];
+                            clims = [-60 60];
                             if tog_cmap
                                 cmap = other_colormap('pf_helix_angle');
                             end
@@ -144,7 +146,11 @@ for i=1:length(cardiacphases)
                             label = 'Absolute E2 angle (°)';
                             ForFig = abs(ForFig);
                             clims = [0 90];
-                            cmap = other_colormap('pf_abs_E2A');
+                            cmap = brewermap([],"-RdBu");
+                            if tog_cmap
+                                cmap = brewermap([],"-RdBu");
+                                %cmap = other_colormap('pf_abs_E2A');
+                            end
                         otherwise
                             fname = '';
                     end
