@@ -16,7 +16,7 @@ dirlisting = dirlisting(notdir); %remove folders
 
 [~,~,ext] = arrayfun(@(x) fileparts(x.name),dirlisting,'UniformOutput',false);
 validExt = {'.ima', '.dcm'};
-valid = cellfun(@(x) ismember(x, validExt), ext);
+valid = cellfun(@(x) ismember(x, validExt), lower(ext));
 dirlisting = dirlisting(valid); %remove non-dicom files
 
 while (~first)

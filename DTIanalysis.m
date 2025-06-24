@@ -159,7 +159,7 @@ newanalysis = false;
 try
     dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
 catch
-    error('There was a problem loading the first dicom from folder "%s".',dataDir);
+    error('LoadFirstDicom: There was a problem loading the first dicom from folder "%s".',dataDir);
 end
 
 switch saveTag
@@ -321,6 +321,9 @@ end
 %%{
 %% sort images by slice and phase
 if strcmp(lastFunc,'AnalyseDicoms')
+    if ~exist('contours','var')
+        contours = struct();
+    end
     [CurrentSlice,CurrentInfo,contours] = CategoriseAndConstrain(ProvisionalDiffusionDicoms,ProvisionalInfo,contours,'RefLowB',lowbFixed); %✓
     lastFunc = 'CategoriseAndConstrain';
     save(fullfile(anaDir,'lastFunc.mat'),'lastFunc');
@@ -330,6 +333,9 @@ end
 
 %% remove low quality images
 if strcmp(lastFunc,'CategoriseAndConstrain')
+    if ~exist('FilesToUse','var')
+        FilesToUse = {};
+    end
     [AHASliceLocations,figures] = RejectImages(CurrentSlice,CurrentInfo,contours,FilesToUse); %✓
 
     %% create clean structures

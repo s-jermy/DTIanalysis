@@ -19,7 +19,7 @@ dirlisting = dirlisting(notdir); %remove folders
 
 [~,~,ext] = arrayfun(@(x) fileparts(x.name),dirlisting,'UniformOutput',false);
 validExt = {'.ima', '.dcm'};
-valid = cellfun(@(x) ismember(x, validExt), ext);
+valid = cellfun(@(x) ismember(x, validExt), lower(ext));
 dirlisting = dirlisting(valid); %remove non-dicom files
 
 for j=1:length(dirlisting)
@@ -30,7 +30,7 @@ for j=1:length(dirlisting)
         continue
     end
     
-    if isfield(dcmInfo,'DiffusionDirectionality') || strcmp(dcmInfo.ImageType,'DERIVED\SECONDARY\OTHER')
+    if isfield(dcmInfo,'DiffusionDirectionality') %|| strcmp(dcmInfo.ImageType,'DERIVED\SECONDARY\OTHER')
         uint8_flag = isa(dcmInfo.DiffusionDirectionality,'uint8'); %some dicom data from Zak is formatted as hex
         
         TMPacq = dcmInfo.AcquisitionTime;
