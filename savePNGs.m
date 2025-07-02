@@ -17,6 +17,7 @@ lowb_labels = {};
 highb_labels = {};
 tog_cmap = 0;
 tog_alpha = 1;
+extras = 0;
 tog_allmaps = 1;
 lowb_ref = [];
 
@@ -41,6 +42,8 @@ for i = 1:2:numel(varargin)
             tog_alpha = value;
         case 'PrintAllMaps'
             tog_allmaps = value;
+        case 'PrintExtras'
+            extras = value;
         otherwise
             error('Unknown parameter: %s', key);
     end
@@ -80,33 +83,47 @@ for i=1:length(cardiacphases)
         
         B_values = arrayfun(@(x) x.B_value,SliceInfo);
         uBVal = unique(B_values);
-        idx = uBVal==lowb_ref;
-        if ~any(idx)
-            idx = 1;
+        idx_lb = uBVal==lowb_ref;
+        if ~any(idx_lb)
+            idx_lb = 1;
         end
-        refTo = find(idx);
+        refTo = find(idx_lb);
         under = trace{j}{refTo(1)}; %ref trace image used as base image
+
+        if extras %save just the trace diffusion image
+            warning('off','MATLAB:MKDIR:DirectoryExists');
+            mkdir(fullfile(fname1,'extra'));
+            warning('on','MATLAB:MKDIR:DirectoryExists');
+
+            hf = figure;
+            ax1 = axes;
+            imagesc(under);axis off;axis equal;colormap(ax1,'gray');colorbar;
+            set(gcf,'Color',[0.35 0 0.35]);
+            export_fig(fullfile(fname1,'extra',[cardiacphases{i} '_' slicelocation{j} '.png']),'-png','-r100','-transparent=[0.35 0 0.35]');
+            close;
+        end
     
         mapnames = fieldnames(TMPmap);
-        for k=1:length(mapnames)
+        len_mn = length(mapnames);
+        for k=1:len_mn
             lowb = fieldnames(TMPmap.(mapnames{k}));
-            for lb=1:length(lowb)
+            len_lb = length(lowb);
+            for lb=1:len_lb
                 if ~isempty(lowb_labels)
                     if ~any(strcmp(lowb{lb},lowb_labels))
                         continue
                     end
                 end
                 highb = fieldnames(TMPmap.(mapnames{k}).(lowb{lb}));
-                for hb=1:length(highb)
+                len_hb = length(highb);
+                for hb=1:len_hb
                     if ~isempty(highb_labels)
                         if ~any(strcmp(highb{hb},highb_labels))
                             continue
                         end
                     end
-                    hf = figure;
-                    ax1 = axes;
-                    imagesc(under);axis off;axis equal;colormap(ax1,'gray');
 
+                    idx = hb + (lb-1)*len_hb;
                     ForFig = TMPmap.(mapnames{k}).(lowb{lb}).(highb{hb});
                     fname = fullfile(fname1,[mapnames{k} '_' lowb{lb} '_' highb{hb} '.png']);
                     switch mapnames{k}
@@ -198,19 +215,37 @@ for i=1:length(cardiacphases)
                     end
 
                     if ~isempty(fname)
+                        hf(idx) = figure('UserData',fname);
+                        ax1 = axes;
+                        imagesc(under);axis equal;axis off;colormap(ax1,'gray');
                         title([lowb{lb} '-' highb{hb} ' ' sprintf(label)]);
                         ax2 = axes;
-                        imagesc(ax2,ForFig,'alphadata',M_myo,clims); %sj
-                        colormap(ax2,cmap);
-                        ax2.Visible = 'off'; linkprop([ax1 ax2],'Position');
-    
-                        axis equal;colorbar;
+                        imagesc(ax2,ForFig,'alphadata',M_myo,clims);colormap(ax2,cmap);
+                        ax2.Visible = 'off';
+                        linkprop([ax1 ax2],'Position');
 
-                        export_fig(fname,'-png','-transparent','-r100');
+                        axis equal;colorbar;drawnow;
                     end
-                    close(hf);
+
+                    if ~isempty(fname) && extras
+                        idx2 = len_hb*len_lb+idx;
+                        hf(idx2) = figure('UserData',fullfile(fname1,'extra',['a_' mapnames{k} '_' lowb{lb} '_' highb{hb} '.png']));
+                        imagesc(ForFig,clims);colormap(cmap);axis off;axis equal;colorbar;
+
+                        idx3 = 2*len_hb*len_lb+idx;
+                        hf(idx3) = figure('UserData',fullfile(fname1,'extra',['b_' mapnames{k} '_' lowb{lb} '_' highb{hb} '.png']));
+                        imagesc(ForFig,'alphadata',M_myo,clims);colormap(cmap);axis off;axis equal;colorbar;
+                    end
                 end
             end
+            hf = findobj('Type','Figure');
+            for h = 1:length(hf)
+                figure(hf(h));
+                set(hf(h),'Color',[0.35 0 0.35]);
+                export_fig(hf(h).UserData,'-png','-transparent=[0.35 0 0.35]','-r100');
+                close;
+            end
+            clear hf;
         end
     end
 end

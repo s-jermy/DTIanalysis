@@ -38,7 +38,9 @@ for i = 1:12
     t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+    override = 'savePNGs';
+    extras = true;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1,'OverrideNextFunc',override,'PrintExtras',extras);
 end
 for i = 1:8
     saveTag = 'steve_oxford_2020';
@@ -48,7 +50,9 @@ for i = 1:8
     t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+    override = 'savePNGs';
+    extras = true;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1,'OverrideNextFunc',override,'PrintExtras',extras);
 end
 for i = 1:20
     saveTag = 'steve_oxford_2021';
@@ -58,7 +62,9 @@ for i = 1:20
     t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+    override = 'savePNGs';
+    extras = false;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1,'OverrideNextFunc',override,'PrintExtras',extras);
 end
 for i = 1:3
     saveTag = 'steve_oxford_2025';
@@ -68,7 +74,9 @@ for i = 1:3
     t1 = false;
     lowb = {'b50'};
     highb = {'b450'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+    override = 'savePNGs';
+    extras = true;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1,'OverrideNextFunc',override,'PrintExtras',extras);
 end
 for i = 4:11
     saveTag = 'steve_oxford_2025';
@@ -78,7 +86,9 @@ for i = 4:11
     t1 = false;
     lowb = {'b50','b350'};
     highb = {'b350','b450','b550','b650'};
-    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1);
+    override = 'savePNGs';
+    extras = true;
+    DTIanalysis('SaveTag',saveTag,'RunBatch',batchFlag,'BatchIndex',batchInd,'TensorGlyphs',glyphs,'LowB',lowb,'HighB',highb,'T1Corr',t1,'OverrideNextFunc',override,'PrintExtras',extras);
 end
 for i = 1:10
     saveTag = 'steve_cmo';
