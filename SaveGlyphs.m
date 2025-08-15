@@ -14,12 +14,12 @@ for i=1:length(hf) %cardiac phases and slice locations
         targety = round(ud(:,2));
     
         op = hf{i}{j}.OuterPosition; %sj - store old figure position and size
-        hf{i}{j}.OuterPosition = [0 0 800 800]; %sj - change to standard size
+        hf{i}{j}.OuterPosition = [0 0 1400 800]; %sj - change to standard size
     
         %move camera to low angle view
-        set(gcf().Children,'View',[-12 16])
-        set(gcf().Children,'CameraPosition',[-76 633 202])
-        set(gcf().Children,'CameraViewAngle',2.3)
+        set(gcf().Children,'CameraViewAngle',4.5)
+        set(gcf().Children,'View',[0 25])
+        set(gcf().Children,'CameraPosition',[100 650 300])
     
         fname1 = fullfile(saveDir,f,'glyph');
         warning('off','MATLAB:MKDIR:DirectoryExists');
@@ -27,8 +27,8 @@ for i=1:length(hf) %cardiac phases and slice locations
         warning('on','MATLAB:MKDIR:DirectoryExists');
     
         %sj - save a couple different views
-        for x = 1:length(targetx)
-            set(gcf().Children,'CameraTarget',[targetx(x) targety(3) 0])
+        for x = 2:4
+            set(gcf().Children,'CameraTarget',[targetx(x)+2.5 targety(3)+5 0])
             fname = fullfile(fname1,[n '_' int2str(x) '.png']);
             export_fig(fname, '-png', '-transparent', '-r100');
         end

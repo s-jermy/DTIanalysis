@@ -15,7 +15,7 @@ function [figures] = GlyphDTI(tensor_dicom,map_dicom,nfo,contours,trace,varargin
 
 lowb_labels = {};
 highb_labels = {};
-tog_cmap = 1;
+tog_cmap = 0;
 lowb_ref = [];
 
 if mod(numel(varargin), 2) ~= 0
@@ -71,7 +71,7 @@ for i=1:length(cardiacphases)
         end
         
         M_myo = contours.myoMask{j};
-        M_myo = permute(repmat(M_myo,[1 1 3 3]),[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
+        M_myo_glyph = permute(repmat(M_myo,[1 1 3 3]),[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
         
         B_values = arrayfun(@(x) x.B_value,SliceInfo);
         uBVal = unique(B_values);
@@ -104,7 +104,7 @@ for i=1:length(cardiacphases)
                     
                 tensor = TMPtensor.tensor.(lowb{lb}).(highb{hb});
                 tensor = permute(tensor,[3 4 1 2]); %rearrange array dimension to get 3x3xNxM
-                D = tensor.*M_myo;
+                D = tensor.*M_myo_glyph;
 
                 figure(fignum);
                 ax1 = axes; %create separate axis for base trace image
@@ -112,7 +112,7 @@ for i=1:length(cardiacphases)
                 ax2 = axes; %second axis for DTI glyphs
                 plotDTI(ax2,D,delta,numpoints);drawnow;
                 linkprop([ax1 ax2],{'YDir'}); %base image has reversed Y-direction, copy to glyph axis
-                linkprop([ax2 ax1],{'XLim','YLim'}); %copy glyph axis limits to base image
+                linkprop([ax1 ax2],{'XLim','YLim'}); %link glyph axis limits to base image
 
                 %% cycle through different maps you wish to use to colour the glyphs
                 for k=1:length(mapnames)-1
@@ -120,35 +120,45 @@ for i=1:length(cardiacphases)
                     switch mapnames{k}
                         % case 'MD' %mean diffusivity
                         %     if tog_cmap
-                        %         cmap = other_colormap('pf_MD');
+                        %         cmap = "hot";
+                        %         %cmap = other_colormap('pf_MD');
                         %     end
                         %     lim = [0 2.5e-3];
                         % case 'FA' %fractional anisotropy
                         %     if tog_cmap
-                        %         cmap = other_colormap('pf_FA');
+                        %         cmap = brewermap([],"-RdYlGn");
+                        %         %cmap = other_colormap('pf_FA');
                         %     end
                         %     lim = [0 1];
                         % case 'AD' %axial diffusivity
                         %     if tog_cmap
                         %         cmap = other_colormap('pf_tensor_mode');
                         %     end
-                        %     lim = [0 3.5];
+                        %     lim = [0 3.5e-3];
                         % case 'RD' %radial diffusivity
                         %     if tog_cmap
                         %         cmap = other_colormap('pf_tensor_mode');
                         %     end
-                        %     lim = [0 2];
+                        %     lim = [0 2e-3];
                         % case 'HA' %helix angle
                         %     if tog_cmap
                         %         cmap = other_colormap('pf_helix_angle');
                         %     end
-                        %     lim = [-90 90];
+                        %     lim = [-60 60];
                         case 'HA_filt' %filtered helix angle
-                            cmap = other_colormap('pf_helix_angle');
-                            lim = [-90 90];
+                            lim = [-60 60];
+                            cmap = "turbo";
+                            if tog_cmap
+                                cmap = other_colormap('pf_helix_angle');
+                            end
                         case 'E2A' %absolute secondary eigenvector angle
-                            cmap = other_colormap('pf_abs_E2A');
+                            map = abs(map);
                             lim = [0 90];
+                            cmap = brewermap([],"-RdBu");
+                            if tog_cmap
+                                cmap = brewermap([],"-RdBu");
+                                %cmap = other_colormap('pf_abs_E2A');
+                            end
                         % case 'TRA' %transverse angle
                         %     if tog_cmap
                         %         cmap = other_colormap('pf_E1_TA');
