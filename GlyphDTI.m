@@ -185,7 +185,7 @@ for i=1:length(cardiacphases)
                             linkprop([ax1 ax2],{'YDir'});
                             linkprop([ax2 ax1],{'XLim','YLim'});
                         end
-                        colormapDTI(ax2,map,cmap,lim,delta,numpoints);drawnow; %add colour to the glyphs based on map
+                        colormapDTI(ax2,map,cmap,lim,numpoints,M_myo);drawnow; %add colour to the glyphs based on map
                         hf{j}{mapnum} = figure(fignum);
                         hf{j}{mapnum}.Name = [mapnames{k} '_' lowb{lb} '_' highb{hb}]; %to save the figure later 
                         hf{j}{mapnum}.Tag = [cardiacphases{i} '_' slicelocation{j}];

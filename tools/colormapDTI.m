@@ -17,12 +17,13 @@ narginchk(1,6); %sj
 map = []; %sj - DTI map
 cmap = ''; %sj - colormap
 lim = []; %sj - colour display limits
-delta = 1;
-m = 50;
+m = 50; %(+1)
+myo = [];
 
 % sj
 if nargs>0
     map = inargs{1};
+    myo = ones(size(map));
 end
 if nargs>1
     cmap = inargs{2};
@@ -31,37 +32,46 @@ if nargs>2
     lim = inargs{3};
 end
 if nargs>3
-    delta = inargs{4};
+    m = inargs{4};
 end
 if nargs>4
-    m = inargs{5};
+    myo = inargs{5};
 end
 
-% sz=size(map);
-% nx=sz(1);ny=sz(2);
+myo_map = map;
+myo_map(~myo) = NaN;
+
+sz=size(myo_map);
+nx=sz(1);ny=sz(2);
+
+verts_per_glyph = (m + 1)^2;
+num_glyphs = ny * nx;
+total_verts = num_glyphs * verts_per_glyph;
+new_colours = zeros(total_verts, 1);
+vert_offset = 0;
 
 % ha=newplot(ha); %sj
 if ~(isempty(cmap)||isempty(lim))
-    colormap(ha,pf_colormap(cmap));
+    colormap(ha,cmap);
     ha.CLim = lim; %sj
 end
-h = ha.Children; %sj - get the glyph surfaces from the axis
+h = ha.Children(2); %sj - get the glyph patch from the axis
 
-for ii=1:length(h)
-    xmin = min(h(ii).XData(:));
-    xmax = max(h(ii).XData(:));
-    x = round((xmin+xmax)/2); %find x position
-    ymin = min(h(ii).YData(:));
-    ymax = max(h(ii).YData(:));
-    y = round((ymin+ymax)/2); %find y position
-
-    j = x/delta; %transform back to pixel coordinates
-    i = y/delta;
-
-    if ~isempty(map)
-        cdata = repmat(map(i,j),m+1); %get value from map
-        h(ii).CData = cdata;
+for i=1:nx
+    for j=1:ny
+        if ~isnan(myo_map(i,j))
+            glyph_color = map(i,j); % scalar value for this glyph
+            colours = repmat(glyph_color, size(verts_per_glyph,1), 1); % same color for all vertices
+            vert_idx = (1:verts_per_glyph) + vert_offset;
+            new_colours(vert_idx) = colours;
+            vert_offset = vert_offset + verts_per_glyph;
+        end
     end
+end
+
+if vert_offset > 0
+    new_colours = new_colours(1:vert_offset);
+    set(h,'FaceVertexCData',new_colours,'FaceColor','interp')
 end
 
 end
