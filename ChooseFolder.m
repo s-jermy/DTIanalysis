@@ -25,17 +25,16 @@ switch tag
     %         };
     case 'steve_cmo'
         files={...
-            % fullfile('CMO','20220816_1404_STEVE_CMO_001','BH'),...	TN
-            fullfile('CMO','20220816_1404_STEVE_CMO_002','BH'),...	#1 - MH - problem with cardiac phases
-            fullfile('CMO','20220816_1404_STEVE_CMO_002','CS'),...	#2 - MH
-            fullfile('CMO','20230203_1405_STEVE_CMO_004','BH'),...	#3 - RS
-            fullfile('CMO','20230203_1405_STEVE_CMO_004','CS'),...	#4 - RS
-            fullfile('CMO','20230217_1404_STEVE_CMO_005','BH'),...	#5 - NV
-            fullfile('CMO','20230217_1404_STEVE_CMO_005','CS'),...	#6 - NV
-            fullfile('CMO','20230310_1035_STEVE_CMO_006','BH'),...	#7 - KO
-            fullfile('CMO','20230310_1035_STEVE_CMO_006','CS'),...	#8 - KO
-            fullfile('CMO','20230310_1440_STEVE_CMO_007','BH'),...	#9 - FO'C
-            fullfile('CMO','20230310_1440_STEVE_CMO_007','CS')...	#10 - FO'C
+            fullfile('CMO','20220816_1404_STEVE_CMO_002','CS'),...	#1 - Patient1
+            fullfile('CMO','20230203_1405_STEVE_CMO_004','CS'),...	#2 - Patient3
+            fullfile('CMO','20230217_1404_STEVE_CMO_005','CS'),...	#3 - Patient4
+            fullfile('CMO','20230310_1440_STEVE_CMO_007','CS'),...	#4 - Patient6
+            fullfile('CMO','20230310_1035_STEVE_CMO_006','CS'),...	#5 - Patient5
+            fullfile('CMO','20220816_1404_STEVE_CMO_002','BH'),...	#6 - Patient1 - problem with cardiac phases
+            fullfile('CMO','20230203_1405_STEVE_CMO_004','BH'),...	#7 - Patient3
+            fullfile('CMO','20230217_1404_STEVE_CMO_005','BH'),...	#8 - Patient4
+            fullfile('CMO','20230310_1035_STEVE_CMO_006','BH'),...	#9 - Patient5
+            fullfile('CMO','20230310_1440_STEVE_CMO_007','BH')...	#10 - Patient6
             };
     case 'steve_cubic'
         files={...
@@ -60,8 +59,7 @@ switch tag
             fullfile('CUBIC','20220117_1341_STEVE_DTI_014','BH'),...	#19
             fullfile('CUBIC','20220117_1341_STEVE_DTI_014','CS'),...	#20
             fullfile('CUBIC','20220314_1602_STEVE_DTI_016','BH'),...	#21
-            fullfile('CUBIC','20220314_1602_STEVE_DTI_016','CS'),...    #22
-            fullfile('CUBIC','20220117_1341_STEVE_DTI_014','FB')...	    #23
+            fullfile('CUBIC','20220314_1602_STEVE_DTI_016','CS')...    #22
             };
     case 'steve_cubic_64'
         files={...

@@ -238,7 +238,7 @@ if ~newfolder
     try
         load(fullfile(saveDir,'Provisional.mat'),'Provisional*'); %
         if(length(who('-regexp','Provisional*'))==2)
-            nextFunc = 'AnalyseDicoms'; %next CategoriseAndConstrain
+            nextFunc = 'CategoriseAndConstrain'; %next CategoriseAndConstrain
         end
     catch
         warning('Provisional: No vaild files were found in that directory. Continuing...');

@@ -49,6 +49,7 @@ for i = 1:length(AcquisitionTimes)
     nfo.Info(i).AcqTime = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.AcqTime;
     nfo.Info(i).DiffDirVec = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.DiffDirVec;
     nfo.Info(i).InstanceNumber = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.InstanceNumber;
+    nfo.Info(i).DiffusionGradientDirection = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.DiffusionGradientDirection;
     if i==1
         nfo.PatientID = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.PatientID;
         nfo.ST = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.SliceThickness;
@@ -56,6 +57,7 @@ for i = 1:length(AcquisitionTimes)
         nfo.TE(1) = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.EchoTime(1);
         nfo.MagneticFieldStrength = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.MagneticFieldStrength;
         nfo.PixelSpacing = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.PixelSpacing;
+        nfo.ImageOrientationPatient = dicom.(AcquisitionTimes{i}).(SeriesNos{1}).Info.ImageOrientationPatient;
     end
     waitbar(i/length(AcquisitionTimes),h);
 end
