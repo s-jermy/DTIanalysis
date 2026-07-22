@@ -33,14 +33,13 @@ for i=1:length(cardiacphases)
         
         h = waitbar(0,'Generating DTI maps...');
         
-%         TMPtensor = tensor_struct.tensor;
+        % TMPtensor = tensor_struct.tensor;
         TMPeigVector = tensor_struct.eigVector;
         TMPeigValue = tensor_struct.eigValue;
 
         epi = contours.epi{j};
         endo = contours.endo{j};
-        roisize = size(epi);
-%         roisize2 = size(endo);
+        % roisize = size(epi);
         M_myo = contours.myoMask{j};
         M_depth = contours.depthMask{j};
 
@@ -48,7 +47,10 @@ for i=1:length(cardiacphases)
         n = length(lowb);
     
         count = 0;
-%         wrong = zeros(n*(n+1)/2,1);
+
+        % define Longitudinal vector as slice-normal
+        LongVect = [0 0 1];
+        LongVect = safe_norm(LongVect);
     
         for lb=1:n
             highb = fieldnames(TMPeigValue.(lowb{lb}));
@@ -58,16 +60,20 @@ for i=1:length(cardiacphases)
                 eigValue = TMPeigValue.(lowb{lb}).(highb{hb});
                 eigVector = TMPeigVector.(lowb{lb}).(highb{hb});
                 imsize = size(eigValue);
-                [Xq,Yq] = meshgrid(1:imsize(2),1:imsize(1));
+                % [Xq,Yq] = meshgrid(1:imsize(2),1:imsize(1));
             
-                ev1 = squeeze(eigVector(:,:,:,1)); %primary eigenvector - fibre vector
+                ev1 = squeeze(eigVector(:,:,:,1)); %primary eigenvector - myocyte vector
                 ev2 = squeeze(eigVector(:,:,:,2)); %secondary eigenvector - sheet vector
                 ev3 = squeeze(eigVector(:,:,:,3)); %tertiary eigenvector - sheet normal vector
 
-                epiVect = zeros(roisize);
-                endoVect = epiVect;
-%                 endoVect = zeros(roisize2);
+                % epiVect = zeros(roisize);
+                % endoVect = epiVect;
+
+                %% caluclate contour radial vectors
+                cx = mean([epi(:,1); endo(:,1)]);
+                cy = mean([epi(:,2); endo(:,2)]);
             
+                %{
                 %% caluclate contour circumferential vectors
                 epiVect(end,:) = epi(1,:) - epi(end,:);
                 endoVect(end,:) = endo(1,:) - endo(end,:);
@@ -86,11 +92,9 @@ for i=1:length(cardiacphases)
                 Fy = scatteredInterpolant(posROI(:,1),posROI(:,2),vecROI(:,2));%,'linear','none');
                 Vx = Fx(Xq,Yq);
                 Vy = Fy(Xq,Yq);
-                
-                % Longitudinal Vector
-                LongVect = [0 0 1];
-                LongVect = LongVect/norm(LongVect);
+                %}
 
+                %%
                 TMPmd = zeros(imsize(1:2));
                 TMPfa = zeros(imsize(1:2));
                 TMPad = zeros(imsize(1:2));
@@ -110,27 +114,24 @@ for i=1:length(cardiacphases)
 %                         if M_myo(row,col)
                         %% calculate rotational invariants
                         eigValue_px = squeeze(eigValue(row,col,:));
-                        I1 = sum(eigValue_px); % trace
-%                         I3 = det(diag(eigValue_px)); % determinant
-                        I4 = sum(eigValue_px.^2); % D:D
-                        I2 = (I1^2-I4)/2; % scalar invariant 2
-                        
-                        if abs(I2-I4)<1E-15
-                            I2 = I4;
+                        lambda = eigValue_px(:);
+
+                        MD_temp = mean(lambda);
+
+                        fa_num = (lambda(1)-MD_temp)^2 + (lambda(2)-MD_temp)^2 + (lambda(3)-MD_temp)^2;
+                        fa_den = lambda(1)^2 + lambda(2)^2 + lambda(3)^2;
+
+                        if fa_den>eps
+                            TMPfa(row,col) = sqrt(1.5 * fa_num/fa_den);
+                        else
+                            TMPfa(row,col) = NaN;
                         end
-                        if I2/I4>1
-                            disp(abs(I2-I4));
-                            I2 = I4;
-                        end
-                            
-                        %% calculate MD and FA
-                        TMPmd(row,col) = I1/3; % mean diffusivity
-                        TMPfa(row,col) = sqrt(1-I2/I4); % fractional anisotropy
-                        TMPtrace(row,col) = I1; % trace map
+                        TMPmd(row,col) = MD_temp;
+                        TMPtrace(row,col) = sum(lambda); % trace map
                         
                         %% calculate AD and RD
-                        TMPad(row,col) = eigValue_px(1); % axial diffusivity
-                        TMPrd(row,col) = (eigValue_px(2) + eigValue_px(3))/2; % radial diffusivity
+                        TMPad(row,col) = lambda(1); % axial diffusivity
+                        TMPrd(row,col) = (lambda(2) + lambda(3))/2; % radial diffusivity
 
                         %% calculate HA and E2A
                         % Fibre and Sheet Vector
@@ -138,34 +139,35 @@ for i=1:length(cardiacphases)
                         E2Vect = squeeze(ev2(row,col,:))'; %SheetVect
                         E3Vect = squeeze(ev3(row,col,:))'; %SheetNorm
 
-                        % Circumferential Vector
-                        CircVect = [Vx(row,col) Vy(row,col) 0];
-                        CircVect = CircVect/norm(CircVect);
-                        
-                        % Radial Vector
-                        RadVect = cross(CircVect,LongVect);
-                        RadVect = RadVect/norm(RadVect);
+                        % Radial vector
+                        RadVect = [col-cx row-cy 0];
+                        RadVect = RadVect - LongVect * dot(RadVect,LongVect);
+                        RadVect = safe_norm(RadVect);
+
+                        % Compute circumferential Vector
+                        CircVect = cross(RadVect, LongVect);
+                        CircVect = safe_norm(CircVect);
 
                         % Project Fibre vector radially onto local wall
                         % tangent plane - https://doi.org/10.1186/s12968-014-0087-8
                         E1RadProj = E1Vect - RadVect*dot(RadVect,E1Vect); % remove radial component of fibre vector
-                        E1RadProj = E1RadProj/norm(E1RadProj);
+                        E1RadProj = safe_norm(E1RadProj);
                         
                         % Projection of the Fibre Vector onto the short axis plane
                         E1LongProj = E1Vect  - LongVect*dot(E1Vect,LongVect); % remove longitudinal component of fibre vector
-                        E1LongProj = E1LongProj/norm(E1LongProj);
-                        % Midfibre vector - https://doi.org/10.1186/s12968-014-0087-8
-%                         MidFibreVect2 = cross(E1Proj,RadVect); %equivalent
-                        MidFibreVect = cross(E1Vect,RadVect); %cross-myocyte
-                        MidFibreVect = MidFibreVect/norm(MidFibreVect);
+                        E1LongProj = safe_norm(E1LongProj);
+                        % Cross-myocyte vector - https://doi.org/10.1186/s12968-014-0087-8
+%                         CrossMyoVect2 = cross(E1Proj,RadVect); %equivalent
+                        CrossMyoVect = cross(E1Vect,RadVect); %cross-myocyte
+                        CrossMyoVect = safe_norm(CrossMyoVect);
                         
                         % Projection of the Sheet Vector onto the mid-fibre plane
-                        E2Proj = E2Vect - E1RadProj*dot(E1RadProj,E2Vect); % remove fibre projection component of sheet vector
-                        E2Proj = E2Proj/norm(E2Proj);
+                        E2Proj = E2Vect - E1Vect*dot(E1Vect,E2Vect); % remove fibre projection component of sheet vector
+                        E2Proj = safe_norm(E2Proj);
 
                         % Projection of the Sheet Normal Vector onto the mid-fibre plane
                         E3Proj = E3Vect - CircVect*dot(E3Vect,CircVect);
-                        E3Proj = E3Proj/norm(E3Proj);
+                        E3Proj = safe_norm(E3Proj);
     
                         %Helix angle - if E1(circ)/E1(long)>=0 -> angle<=0
                         haRad2 = asin(dot(E1RadProj,LongVect)); %other ha method (equiv with correction)
@@ -178,10 +180,10 @@ for i=1:length(cardiacphases)
                         traRad = atan(dot(E1LongProj,RadVect)/dot(E1LongProj,CircVect)); %https://doi.org/10.1109/tmi.2012.2192743
                         traDeg = atand(dot(E1LongProj,RadVect)/dot(E1LongProj,CircVect)); %degrees
                         %Second eigenvector angle
-%                         e2aRad2 = -atan(dot(E2Vect,RadVect)/dot(E2Vect,MidFibreVect)); %other e2a method (equiv of other method)
-%                         e2aDeg2 = -atand(dot(E2Vect,RadVect)/dot(E2Vect,MidFibreVect)); %degrees
-                        e2aRad = -atan(dot(E2Proj,RadVect)/dot(E2Proj,MidFibreVect)); %https://doi.org/10.1186/s12968-014-0087-8
-                        e2aDeg = -atand(dot(E2Proj,RadVect)/dot(E2Proj,MidFibreVect)); %degrees
+%                         e2aRad2 = -atan(dot(E2Vect,RadVect)/dot(E2Vect,CrossMyoVect)); %other e2a method (equiv of other method)
+%                         e2aDeg2 = -atand(dot(E2Vect,RadVect)/dot(E2Vect,CrossMyoVect)); %degrees
+                        e2aRad = -atan(dot(E2Proj,RadVect)/dot(E2Proj,CrossMyoVect)); %https://doi.org/10.1186/s12968-014-0087-8
+                        e2aDeg = -atand(dot(E2Proj,RadVect)/dot(E2Proj,CrossMyoVect)); %degrees
                         %Sheet angle - if E3(rad)/E3(long)>=0 -> angle>=0
                         saRad = atan(dot(E3Proj,RadVect)/dot(E3Proj,LongVect));
                         saDeg = atand(dot(E3Proj,RadVect)/dot(E3Proj,LongVect));
@@ -267,6 +269,17 @@ for i=1:length(cardiacphases)
 end
 
 end
+
+
+function v = safe_norm(v)
+n = norm(v);
+if n > eps
+    v = v / n;
+else
+    v = [NaN NaN NaN];
+end
+end
+
 
 function HA_filt = filterHA(HA,Mask,Depth,varargin)
 % in:

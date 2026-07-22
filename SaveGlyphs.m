@@ -20,17 +20,24 @@ for i=1:length(hf) %cardiac phases and slice locations
         set(gcf().Children,'CameraViewAngle',4.5)
         set(gcf().Children,'View',[0 25])
         set(gcf().Children,'CameraPosition',[100 650 300])
+                        
+        camlight(gcf().Children(1),'headlight');      % camera-aligned primary light
+        camlight(gcf().Children(1),'left');drawnow;   % secondary light for curvature cues
     
-        fname1 = fullfile(saveDir,f,'glyph');
+        fname = fullfile(saveDir,f,'glyph');
         warning('off','MATLAB:MKDIR:DirectoryExists');
-        mkdir(fname1);
+        mkdir(fname);
         warning('on','MATLAB:MKDIR:DirectoryExists');
     
         %sj - save a couple different views
         for x = 2:4
             set(gcf().Children,'CameraTarget',[targetx(x)+2.5 targety(3)+5 0])
-            fname = fullfile(fname1,[n '_' int2str(x) '.png']);
-            export_fig(fname, '-png', '-transparent', '-r100');
+            fname1 = fullfile(fname,[n '_' int2str(x) '.png']);
+            export_fig(fname1, '-png', '-transparent', '-r100');
+            if x==3
+                fname1 = fullfile(fname,[n '_' int2str(x) '.svg']);
+                hgexport(gcf, fname1, hgexport('factorystyle'), 'Format', 'svg');
+            end
         end
     
         hf{i}{j}.OuterPosition = op; %sj - reset back to original

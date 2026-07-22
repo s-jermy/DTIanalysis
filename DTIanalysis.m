@@ -438,7 +438,12 @@ if strcmp(nextFunc,'savePNGs')
 end
 
 if strcmp(nextFunc,'WriteExcelSheet')&&glyphs
-    figures = GlyphDTI(CleanTensor,CleanMaps,CorInfo,contours,Trace,'LowB',lowbLabels,'HighB',highbLabels,'RefLowB',lowbFixed);
+    try
+        load(fullfile(anaDir,'glyphs.mat'),'figures');
+    catch
+        figures = GlyphDTI(CleanTensor,CleanMaps,CorInfo,contours,Trace,'LowB',lowbLabels,'HighB',highbLabels,'RefLowB',lowbFixed);
+        save(fullfile(anaDir,'glyphs.mat'),'figures');
+    end
     SaveGlyphs(figures,anaDir);
     nextFunc = 'WriteExcelSheet_ng'; %no glyphs
     save(fullfile(anaDir,'nextFunc.mat'),'nextFunc');

@@ -1,4 +1,4 @@
-function plotDTI(varargin) %sj
+function plotDTI(D,map,varargin) %sj
 %-fanDTasia ToolBox------------------------------------------------------------------
 % This Matlab script is part of the fanDTasia ToolBox: a Matlab library for Diffusion 
 % Weighted MRI (DW-MRI) Processing, Diffusion Tensor (DTI) Estimation, High-order 
@@ -56,36 +56,55 @@ function plotDTI(varargin) %sj
 % 
 %------------------------------------------------------------------------------------
 
-narginchk(2,4); %sj
 [ha,inargs,nargs]=axescheck(varargin{:}); %sj
 
 %sj - default values
-D = 1; %sj
-delta = 1; %sj - distance between glyphs
 gama = 3; % sj - glyph sharpness ( 3 - 6 )
-m = 50; %sj - number of points in ellipsoid (+1)
 c = [1/3 1/3 1/3]; %sj - linear, planar, spherical anisotropy
-a1 = [0;0;-2]; %sj - add an axis line
-a2 = [0;0;2];
+axis_line = [0;0;0];
+
+delta = 1; %sj - distance between glyphs
+m = 50; %sj - number of points in ellipsoid (+1)
+axis_dim = 0; %sj - add an axis line pointing along direction of (3) myocyte axis, (2) sheet axis, (1) sheet-normal axis, (0) off
+cmap = '';
+lim = [];
 
 % sj
-if nargs>0
-    D = inargs{1}; %sj
+if mod(nargs, 2) ~= 0
+    error('Arguments must be provided in key-value pairs.');
 end
-if nargs>1
-    delta = inargs{2};
-end
-if nargs>2
-    m = inargs{3};
+for i=1:2:nargs
+    key = inargs{i};
+    value = inargs{i+1};
+
+    switch key
+        case 'Delta'
+            delta = value;
+        case 'NumPoints'
+            m = value;
+        case 'Axis'
+            axis_dim = value;
+        case 'ColourMap'
+            cmap = value;
+        case 'CLim'
+            lim = value;
+        otherwise
+            error('Unknown parameter: %s', key);
+    end
 end
 
-sz=size(D);
-if length(sz)==2
-    ny=1;nx=1;
-elseif length(sz)==3
-    ny=sz(3);nx=1;
-elseif length(sz)==4
-    ny=sz(3);nx=sz(4);
+sz=size(map);
+ny=sz(1);nx=sz(2);
+
+if axis_dim>3
+    axis_dim=3;
+elseif axis_dim<0
+    axis_dim=0;
+end
+if axis_dim~=0
+    axis_line(axis_dim) = 1.5;
+    a1 = -1*axis_line;
+    a2 = axis_line;
 end
 
 ha=newplot(ha); %sj
@@ -101,7 +120,7 @@ num_glyphs = ny * nx;
 total_verts = num_glyphs * verts_per_glyph;
 total_faces = num_glyphs * faces_per_glyph;
 
-% Pre-allocate the full arrays with zeros. THIS IS THE CRITICAL STEP.
+% Pre-allocate the full arrays with zeros.
 all_vertices = zeros(total_verts, 3);
 all_faces = zeros(total_faces, 4); % surf2patch creates 4-sided faces
 all_colours = zeros(total_verts, 1);
@@ -179,33 +198,34 @@ for i=1:ny
             h1 = arrow3(da1,da2,'w-2',0);
             warning('on');
             %}
+            % Convert the current glyph surface to patch format
+            [faces, vertices, ~] = surf2patch(dX, dY, dZ, dZ);
+            glyph_color = map(i,j); % scalar value for this glyph
+            colours = repmat(glyph_color, size(verts_per_glyph,1), 1); % same color for all vertices
 
-            if sum(d(:))~=0 % Make sure you only do this for non-zero tensors
-                % Convert the current glyph surface to patch format
-                [faces, vertices, colours] = surf2patch(dX, dY, dZ, dZ);  
+            % Define the index range for the current glyph's data
+            vert_idx = (1:verts_per_glyph) + vert_offset;
+            face_idx = (1:faces_per_glyph) + face_offset;
+            
+            % Place the new data into the pre-allocated arrays
+            all_vertices(vert_idx, :) = vertices;
+            all_colours(vert_idx) = colours;
+            
+            % Place the face data, making sure to offset it by the vertex offset
+            all_faces(face_idx, :) = faces + vert_offset;
+            
+            % Update the offsets for the next iteration
+            vert_offset = vert_offset + verts_per_glyph;
+            face_offset = face_offset + faces_per_glyph;
 
-                % Define the index range for the current glyph's data
-                vert_idx = (1:verts_per_glyph) + vert_offset;
-                face_idx = (1:faces_per_glyph) + face_offset;
-                
-                % Place the new data into the pre-allocated arrays
-                all_vertices(vert_idx, :) = vertices;
-                all_colours(vert_idx) = colours;
-                
-                % Place the face data, making sure to offset it by the vertex offset
-                all_faces(face_idx, :) = faces + vert_offset;
-                
-                % Update the offsets for the next iteration
-                vert_offset = vert_offset + verts_per_glyph;
-                face_offset = face_offset + faces_per_glyph;
-
+            if axis_dim~=0
                 da1 = v*a1;
                 da2 = v*a2;
                 
                 % The start (P1) and end (P2) points of the line, shifted to position
                 P1 = [da1(1)+j*delta, da1(2)+i*delta, da1(3)];
                 P2 = [da2(1)+j*delta, da2(2)+i*delta, da2(3)];
-
+    
                 % Place the coordinates into the pre-allocated array
                 all_lines(line_idx, :)   = P1;
                 all_lines(line_idx+1, :) = P2;
@@ -218,13 +238,18 @@ for i=1:ny
     end
 end
 
+if ~(isempty(cmap)||isempty(lim))
+    colormap(ha,cmap);
+    ha.CLim = lim; %sj
+end
+
 if vert_offset > 0
     % Trim any unused pre-allocated space if some tensors were skipped
     all_vertices = all_vertices(1:vert_offset,:);
     all_faces = all_faces(1:face_offset,:);
     all_colours = all_colours(1:vert_offset);
 
-    % Draw the single, consolidated patch object
+    % Draw the tensor glyph patch
     patch('Parent', ha, ...
           'Vertices', all_vertices, ...
           'Faces', all_faces, ...
@@ -235,23 +260,10 @@ end
 
 if line_idx > 1
     % Trim any unused space
-    all_lines = all_lines(1:line_idx-1, :); 
-    % Plot all lines with a single, fast command
+    all_lines = all_lines(1:line_idx-1, :);
     plot3(ha, all_lines(:,1), all_lines(:,2), all_lines(:,3), 'w-', 'LineWidth', 2);
 end
 
-% set(gca,'GridLineStyle','none')
-% set(gca,'ZTick',[])
-shading interp
-lighting phong
-% lighting gouraud
-% camlight
-% colormap winter
-% l = light('Position',[0 0 1],'Style','infinite','Color',[ 1.000 0.584 0.000]);
-axis equal
-axis off
-% view([1 -2 20]);
-% view(2);
 hold off
 
 % fprintf(1,'\nIf you use plotDTI.m please cite the following work:\n');
