@@ -268,74 +268,95 @@ if ~newanalysis
                 nextFunc = ''; %start from scratch
             end
         case 'RejectImages' %next RejectImages
-            load(fullfile(anaDir,'Current.mat'),'Current*');
+            data = loadFiles(anaDir,'Current');
+            unpackStruct(data.Current);
         case 'Registration' %next Registration
-            load(fullfile(anaDir,'Clean.mat'),'Clean*');
+            data = loadFiles(anaDir,'Clean');
+            unpackStruct(data.Clean);
             for l = 1:length(CleanInfo)
                 CleanInfo{l}.contoursDefined = 0;
                 CleanInfo{l}.registrationComplete = 0;
             end
         case 'DefineROI' %next DefineROI
-            load(fullfile(anaDir,'Clean.mat'),'Clean*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'Clean','Trace');
+            unpackStruct(data.Clean);
+            unpackStruct(data.Trace);
             for l = 1:length(CleanInfo)
                 CleanInfo{l}.contoursDefined = 0;
             end
         case 'hrCorrection' %next hrCorrection
-            load(fullfile(anaDir,'Clean.mat'),'Clean*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'Clean','Trace');
+            unpackStruct(data.Clean);
+            unpackStruct(data.Trace);
         case 'Average' %next Average
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanCor','Trace');
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
         case 'CalculateTensor' %next CalculateTensor
-            load(fullfile(anaDir,'CleanAver.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanAver','CleanCor','Trace');
+            unpackStruct(data.CleanAver);
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
         case 'DTIMaps' %next DTIMaps
-            load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanAver.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanTensor','CleanAver','CleanCor','Trace');
+            unpackStruct(data.CleanTensor);
+            unpackStruct(data.CleanAver);
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
         case 'SegmentalAnalysis' %next SegmentalAnalysis
-            load(fullfile(anaDir,'CleanMaps.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanAver.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanMaps','CleanAver','CleanCor','Trace');
+            unpackStruct(data.CleanMaps);
+            unpackStruct(data.CleanAver);
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
             if glyphs
-                load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
+                data = loadFiles(anaDir,'CleanTensor');
+            unpackStruct(data.CleanTensor);
             end
         case 'savePNGs' %next savePNGs
-            load(fullfile(anaDir,'CleanSegs.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanMaps.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanMaps','CleanSegs','CleanCor','Trace');
+            unpackStruct(data.CleanSegs);
+            unpackStruct(data.CleanMaps);
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
             if glyphs
-                load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
+                data = loadFiles(anaDir,'CleanTensor');
+            unpackStruct(data.CleanTensor);
             end
         case 'WriteExcelSheet' %next WriteExcelSheet or...
-            load(fullfile(anaDir,'CleanSegs.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanSegs','CleanCor','Trace');
+            unpackStruct(data.CleanSegs);
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
             if glyphs %next GlyphDTI
-                load(fullfile(anaDir,'CleanTensor.mat'),'Clean*');
-                load(fullfile(anaDir,'CleanMaps.mat'),'Clean*');
+                data = loadFiles(anaDir,'CleanTensor','CleanMaps');
+                unpackStruct(data.CleanTensor);
+                unpackStruct(data.CleanMaps);
             end
         case 'WriteExcelSheet_ng' %next WriteExcelSheet
-            load(fullfile(anaDir,'CleanSegs.mat'),'Clean*');
-            load(fullfile(anaDir,'CleanCor.mat'),'Cor*');
-            load(fullfile(anaDir,'Trace.mat'),'Trace');
+            data = loadFiles(anaDir,'CleanSegs','CleanCor','Trace');
+            unpackStruct(data.CleanSegs);
+            unpackStruct(data.CleanCor);
+            unpackStruct(data.Trace);
         case 'Finished'
             % nothing to do
         otherwise %start again
             nextFunc = ''; %just redo everything
     end
+else
+    disp('Starting from scratch!')
 end
 
 save(fullfile(saveDir,'Paths.mat'),'dataDir','saveDir','affine','glyphs','analysisTag','lowbLabels','highbLabels');
 
 %% load images
 if isempty(nextFunc)
-    InitialDicoms = LoadDicom(dirlisting); %✓
+    try
+        dirlisting = dir(fullfile(dataDir,'**')); %find all in the main directory including subfolders
+        InitialDicoms = LoadDicom(dirlisting); %✓
+    catch
+        error('LoadDicom: There was a problem loading the dicoms from folder "%s".',dataDir);
+    end
     % nextFunc = 'AnalyseDicoms';
 
     [ProvisionalDiffusionDicoms,ProvisionalInfo] = AnalyseDicoms(InitialDicoms); %✓
@@ -495,3 +516,64 @@ end
 end
 
 %}
+function data = loadFiles(directory, varargin)
+
+if numel(varargin) == 0
+    error('At least one extra argument must be provided');
+end
+
+data = struct();
+
+for i = 1:numel(varargin)
+    key = varargin{i};
+
+    switch key
+        case 'Current'
+            S = load(fullfile(directory,'Current.mat'),'Current*');
+            data.Current = S;
+        case 'Clean'
+            S = load(fullfile(directory,'Clean.mat'),'Clean*');
+            data.Clean = S;
+        case 'Trace'
+            S = load(fullfile(directory,'Trace.mat'),'Trace');
+            data.Trace = S;
+        case 'CleanCor'
+            try
+                S = load(fullfile(directory,'CleanCor.mat'),'Cor*');
+            catch
+                load(fullfile(directory,'CleanHRcorr.mat'),'HRCorr*');
+                CorData = HRCorrData;
+                CorInfo = HRCorrInfo;
+                save(fullfile(directory,'CleanCor.mat'),'CorData','CorInfo');
+                clear CorInfo CorData HRCorrInfo HRCorrData
+                S = load(fullfile(directory,'CleanCor.mat'),'Cor*');
+            end
+            data.CleanCor = S;
+        case 'CleanAver'
+            S = load(fullfile(directory,'CleanAver.mat'),'Clean*');
+            data.CleanAver = S;
+        case 'CleanTensor'
+            S = load(fullfile(directory,'CleanTensor.mat'),'Clean*');
+            data.CleanTensor = S;
+        case 'CleanMaps'
+            S = load(fullfile(directory,'CleanMaps.mat'),'Clean*');
+            data.CleanMaps = S;
+        case 'CleanSegs'
+            S = load(fullfile(directory,'CleanSegs.mat'),'Clean*');
+            data.CleanSegs = S;
+        otherwise
+            warning('Unknown parameter: %s', key);
+    end
+end
+
+end
+
+
+function unpackStruct(S)
+fn = fieldnames(S);
+for k = 1:numel(fn)
+    assignin('caller', fn{k}, S.(fn{k}));
+end
+
+end
+
