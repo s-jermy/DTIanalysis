@@ -95,6 +95,7 @@ addpath(genpath('tools')); %add tools and subfolders to the search path
 
 %% save directory for output files for different projects
 saveTagCell = regexp(saveTag,'_','split');
+dataFirstDicom = fullfile(pwd,'firstDCM'); %an internal repository where the first dicom is stored that mirrors the folder structure of an external repository
 if ispc
     switch saveTagCell{1}
         % case 'saveTag'
@@ -152,13 +153,14 @@ dataDir = '';
 
 if batchFlag
     dataDir = ChooseFolder(saveTag,batchInd);
+    dataDcm = fullfile(dataFirstDicom,dataDir); %backup folder in case external files are not available
     dataDir = fullfile(dataDirParent,dataDir); %get folder of current subject
 end
 
 if isempty(dataDir)
     dataDir = uigetdir(dataDirParent); %choose bottom level folder of images - i.e. folder containing no subfolders
+    dataDcm = dataDir;
 end
-dirlisting = dir(fullfile(dataDir,'**')); %find all in the main directory including subfolders
 
 splitdir = regexp(dataDir,filesep,'split');
 splitdir = splitdir(~cellfun('isempty',splitdir));
@@ -167,9 +169,15 @@ newfolder = false;
 newanalysis = false;
 
 try
+    dirlisting = dir(fullfile(dataDir,'**')); %find all in the main directory including subfolders
     dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the chosen directory
 catch
-    error('LoadFirstDicom: There was a problem loading the first dicom from folder "%s".',dataDir);
+    try
+        dirlisting = dir(fullfile(dataDcm,'**')); %find all in the backup first dicom directory including subfolders
+        dcmInfo = LoadFirstDicom(dirlisting); %load first valid dicom file from the backup directory
+    catch
+        error('LoadFirstDicom: There was a problem loading the first dicom from folder "%s".',dataDir);
+    end
 end
 
 switch saveTag
