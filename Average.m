@@ -1,17 +1,15 @@
-function [averaged_dicom,SNR_estimate] = Average(dicom,nfo)
+function [averaged_dicom] = Average(dicom,nfo)
 % in:
 % dicom - struct containing diffusion images
 % nfo - struct containing info about dicom images
 % 
 % out:
 % averaged_dicom - struct with average images
-% SNR_estimate - estimated SNR map
 % 
 % description:
 % average images for each unique b-value and gradient direction
 
 averaged_dicom = [];
-SNR_estimate = [];
 
 cardiacphases = fieldnames(dicom);
 
@@ -108,14 +106,6 @@ for i=1:length(cardiacphases)
             end
         else
             averaged_dicom.(cardiacphases{i}).(slicelocation{j}).AveragedData(k) = struct('image',{},'B_value_uncorr',{},'B_value',{},'dir',{});
-        end
-    
-        %% estimate SNR
-        if dirmain>0
-            SNR_estimate = mean(abs(regImage(:,:,bValInd)),3)./std(abs(regImage(:,:,bValInd)),0,3);
-            SNR_estimate(isinf(SNR_estimate)) = 0;
-        else
-            SNR_estimate = zeros(size(regImage(:,:,1)));
         end
     end
 end

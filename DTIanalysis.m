@@ -16,6 +16,7 @@ function DTIanalysis(varargin)
 %     git / {false}=use default matlab colours🥱
 %     useMapMask - {true}/false use roi mask when printing maps
 %     allMaps - true=print all dti maps / {false}=print md fa ha e2a
+%     EstimateSNR - {true}/false calculate SNR values
 %     
 %     description:
 %     Code for running DTIanalysis. If no inputs are given, it is
@@ -41,6 +42,7 @@ allMaps = false;
 extras = false;
 override_nf = '';
 t1 = true;
+estimate_snr = false;
 
 if mod(numel(varargin), 2) ~= 0
     error('Arguments must be provided in key-value pairs.');
@@ -77,6 +79,8 @@ for i = 1:2:numel(varargin)
             allMaps = value;
         case 'PrintExtras'
             extras = value;
+        case 'EstimateSNR'
+            estimate_snr = value;
         case 'OverrideNextFunc'
             override_nf = value;
         otherwise
@@ -395,9 +399,8 @@ if strcmp(nextFunc,'hrCorrection')
 end
 
 %% get average images for each unique gradient direction
-% should I get the SNR maps?
 if strcmp(nextFunc,'Average')
-    [CleanAverage,~] = Average(CorData,CorInfo); %✓ - fixed
+    CleanAverage = Average(CorData,CorInfo); %✓ - fixed
     nextFunc = 'CalculateTensor';
     save(fullfile(anaDir,'CleanAver.mat'),'CleanAverage');
     save(fullfile(anaDir,'nextFunc.mat'),'nextFunc');
@@ -443,15 +446,23 @@ if strcmp(nextFunc,'WriteExcelSheet')&&glyphs
     close all; clear figures;
 end
 
+if estimate_snr
+    %[SplitData,SplitInfo] = RepetitionSplit(CorData,CorInfo); %might come back to this one day, but it is not this day
+    CleanSNR = CalculateSNR(CorData,CorInfo,contours);
+    save(fullfile(anaDir,'CleanSNR.mat'),'CleanSNR');
+else
+    CleanSNR = [];
+end
+
 if strcmp(nextFunc,'WriteExcelSheet')||strcmp(nextFunc,'WriteExcelSheet_ng')
-    if (ispc)
+    if (ispc) %SNR not implemented
         warning('off','MATLAB:MKDIR:DirectoryExists');
         [Excel, Workbook] = StartExcel; %✓
-        WriteExcelSheet(Excel,Workbook,CleanSegments,CorInfo,anaDir,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheet(Excel,Workbook,CleanSegments,CorInfo,anaDir,'LowB',lowbLabels,'HighB',highbLabels,'EstimateSNR',estimate_snr,'SNR',CleanSNR); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
         warning('on','MATLAB:MKDIR:DirectoryExists');
         saveAndCloseExcel(Excel,Workbook,anaDir,analysisTag); %✓
     else
-        WriteExcelSheetMac(CleanSegments,CorInfo,anaDir,analysisTag,'LowB',lowbLabels,'HighB',highbLabels); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
+        WriteExcelSheetMac(CleanSegments,CorInfo,anaDir,analysisTag,'LowB',lowbLabels,'HighB',highbLabels,'EstimateSNR',estimate_snr,'SNR',CleanSNR); %✓ - I suggest pausing onedrive if you are saving into a onedrive folder
     end
     nextFunc = 'Finished';
     save(fullfile(anaDir,'nextFunc.mat'),'nextFunc');

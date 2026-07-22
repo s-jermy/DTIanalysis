@@ -2,6 +2,8 @@ function WriteExcelSheetMac(SegmentedData,~,saveDir,AddID,varargin)
 
 lowb_labels = {};
 highb_labels = {};
+estimate_snr = false;
+snr_dicom = [];
 
 if mod(numel(varargin), 2) ~= 0
     error('Arguments must be provided in key-value pairs.');
@@ -16,9 +18,17 @@ for i = 1:2:numel(varargin)
             lowb_labels = value;
         case 'HighB'
             highb_labels = value;
+        case 'EstimateSNR'
+            estimate_snr = value;
+        case 'SNR'
+            snr_dicom = value;
         otherwise
             error('Unknown parameter: %s', key);
     end
+end
+
+if estimate_snr&&isempty(snr_dicom)
+    error('WriteExcelSheetMac: SNR estimate is empty');
 end
 
 sz = [0 22];
@@ -29,7 +39,18 @@ varNames = {'Phase','Slice','lowB','highB', ...
     'MD','MDstd','FA','FAstd','AD','ADstd','RD','RDstd','HAd','HAdstd', ...
     'HAg','HAgstd','absE2A','absE2Astd','TRA','TRAstd','SA','SAstd'};
 T_summ = table('Size',sz,'VariableTypes',varTypes,'VariableNames',varNames);
+
 writetable(T_summ,fullfile(saveDir,[AddID '.xlsx']),'Sheet','Summary'); % write initial empty table that will updated at the end
+
+if estimate_snr
+    T_snr_summary = table('Size',[0 5], ...
+        'VariableTypes',{'string','string','double','double','double'}, ...
+        'VariableNames',{'Phase','Slice','B_Value','SNR','SNRstd'});
+    
+    T_snr_detail = table('Size',[0 6], ...
+        'VariableTypes',{'string','string','string','double','double','double'}, ...
+        'VariableNames',{'Phase','Slice','SequenceName','Repetitions','SNR','SNRstd'});
+end
 
 cardiacphases = fieldnames(SegmentedData);
 for i=1:length(cardiacphases)
@@ -95,10 +116,40 @@ for i=1:length(cardiacphases)
 
             end
         end
+        if estimate_snr
+            SNR = snr_dicom.(cardiacphases{i}).(slicelocation{j}).SNR;
+            bVal = snr_dicom.(cardiacphases{i}).(slicelocation{j}).bVal;
+            SNR_mean = snr_dicom.(cardiacphases{i}).(slicelocation{j}).SNR_mean;
+            SNR_std = snr_dicom.(cardiacphases{i}).(slicelocation{j}).SNR_std;
+
+            for bb = 1:length(bVal)
+                T_snr_summary = [T_snr_summary; table( ...
+                    string(cardiacphases{i}), ...
+                    string(slicelocation{j}), ...
+                    bVal(bb), ...
+                    SNR_mean(bb), ...
+                    SNR_std(bb), ...
+                    'VariableNames', T_snr_summary.Properties.VariableNames)];
+            end
+            for k = 1:length(SNR)
+                T_snr_detail = [T_snr_detail; table( ...
+                    string(cardiacphases{i}), ...
+                    string(slicelocation{j}), ...
+                    string(SNR(k).SequenceName), ...
+                    SNR(k).repetitions, ...
+                    SNR(k).SNR_roi, ...
+                    SNR(k).SNR_roi_std, ...
+                    'VariableNames', T_snr_detail.Properties.VariableNames)];
+            end
+        end
     end
 end
 
 writetable(T_summ,fullfile(saveDir,[AddID '.xlsx']),'Sheet','Summary');
+if estimate_snr
+    writetable(T_snr_summary, fullfile(saveDir,[AddID '.xlsx']),'Sheet','SNR');
+    writetable(T_snr_detail, fullfile(saveDir,[AddID '.xlsx']),'Sheet','SNR_detail');
+end
 
 
 
