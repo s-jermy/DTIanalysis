@@ -4,3 +4,5 @@
 .DS_Store
 /old
 /tools/cardiac_DTI_colormaps
+/firstDCM
+test.m
